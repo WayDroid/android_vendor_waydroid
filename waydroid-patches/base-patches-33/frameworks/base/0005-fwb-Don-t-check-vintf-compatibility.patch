@@ -1,0 +1,26 @@
+From 7cd54673e211ff7a18a98f3bff3a4a8f150dd8fd Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Tue, 20 Apr 2021 16:33:54 +0800
+Subject: [PATCH 05/29] fwb: Don't check vintf compatibility
+
+Change-Id: I7a611be5bf7502da979f7ccbd0f71f9749be04c8
+---
+ core/java/android/os/Build.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/android/os/Build.java b/core/java/android/os/Build.java
+index 0b956f8bf9e0..cd6a30eb6f02 100755
+--- a/core/java/android/os/Build.java
++++ b/core/java/android/os/Build.java
+@@ -1249,7 +1249,7 @@ public class Build {
+      */
+     public static boolean isBuildConsistent() {
+         // Don't care on eng builds.  Incremental build may trigger false negative.
+-        if (IS_ENG) return true;
++        if (!IS_USER) return true;
+ 
+         if (IS_TREBLE_ENABLED) {
+             // If we can run this code, the device should already pass AVB.
+-- 
+2.48.1
+

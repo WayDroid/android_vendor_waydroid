@@ -1,0 +1,52 @@
+From 0adcba932d238513044619c77bf131d294eb3bd0 Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Thu, 15 Apr 2021 12:15:57 +0700
+Subject: [PATCH] (waydroid) Allow host_hwbinder to be used for HALs
+
+Change-Id: I75de3547376a98904f49a48a1029633570f3ab4d
+---
+ Interface.cpp   | 2 +-
+ generateCpp.cpp | 7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/Interface.cpp b/Interface.cpp
+index 9be88e9f..4d6fbd2a 100644
+--- a/Interface.cpp
++++ b/Interface.cpp
+@@ -106,7 +106,7 @@ bool Interface::fillLinkToDeathMethod(Method *method) const {
+                 },
+                 {IMPL_PROXY,
+                     [](auto &out) {
+-                        out << "::android::hardware::ProcessState::self()->startThreadPool();\n";
++                        out << "::android::hardware::ProcessState::self(remote()->isHostHwBinder())->startThreadPool();\n";
+                         out << "::android::hardware::hidl_binder_death_recipient *binder_recipient"
+                             << " = new ::android::hardware::hidl_binder_death_recipient(recipient, cookie, this);\n"
+                             << "std::unique_lock<std::mutex> lock(_hidl_mMutex);\n"
+diff --git a/generateCpp.cpp b/generateCpp.cpp
+index ec957749..69b03f80 100644
+--- a/generateCpp.cpp
++++ b/generateCpp.cpp
+@@ -1061,8 +1061,9 @@ void AST::generateStaticProxyMethodSource(Formatter& out, const std::string& kla
+             method,
+             superInterface);
+ 
+-    out << "::android::hardware::Parcel _hidl_data;\n";
+-    out << "::android::hardware::Parcel _hidl_reply;\n";
++    out << "bool isHostHwBinder = ::android::hardware::IInterface::isHostHwBinder(_hidl_this);\n";
++    out << "::android::hardware::Parcel _hidl_data(isHostHwBinder);\n";
++    out << "::android::hardware::Parcel _hidl_reply(isHostHwBinder);\n";
+     out << "::android::status_t _hidl_err;\n";
+     out << "::android::status_t _hidl_transact_err;\n";
+     out << "::android::hardware::Status _hidl_status;\n\n";
+@@ -1098,7 +1099,7 @@ void AST::generateStaticProxyMethodSource(Formatter& out, const std::string& kla
+ 
+     if (hasInterfaceArgument) {
+         // Start binder threadpool to handle incoming transactions
+-        out << "::android::hardware::ProcessState::self()->startThreadPool();\n";
++        out << "::android::hardware::ProcessState::self(isHostHwBinder)->startThreadPool();\n";
+     }
+     out << "_hidl_transact_err = ::android::hardware::IInterface::asBinder(_hidl_this)->transact("
+         << method->getSerialId() << " /* " << method->name()
+-- 
+2.39.1
+

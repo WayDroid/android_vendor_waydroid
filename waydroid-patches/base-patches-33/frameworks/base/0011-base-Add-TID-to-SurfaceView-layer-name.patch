@@ -1,0 +1,50 @@
+From cfc54ed422963422c33e7b6d58cff81acb7bfec3 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Wed, 8 Sep 2021 11:10:51 +0800
+Subject: [PATCH 11/29] base: Add TID to SurfaceView layer name
+
+Change-Id: Ic607a646287829b05e0e90501f8fa8d5ab94a6b1
+---
+ core/java/android/view/SurfaceControl.java | 3 +--
+ core/java/android/view/SurfaceView.java    | 4 ++--
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/core/java/android/view/SurfaceControl.java b/core/java/android/view/SurfaceControl.java
+index 92bdfdd4c558..ce8063567d5c 100644
+--- a/core/java/android/view/SurfaceControl.java
++++ b/core/java/android/view/SurfaceControl.java
+@@ -1845,8 +1845,7 @@ public final class SurfaceControl implements Parcelable {
+ 
+     @Override
+     public String toString() {
+-        return "Surface(name=" + mName + ")/@0x" +
+-                Integer.toHexString(System.identityHashCode(this));
++        return mName;
+     }
+ 
+     /**
+diff --git a/core/java/android/view/SurfaceView.java b/core/java/android/view/SurfaceView.java
+index 0927bc7b9427..a732ca4f3734 100644
+--- a/core/java/android/view/SurfaceView.java
++++ b/core/java/android/view/SurfaceView.java
+@@ -963,7 +963,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
+                 final Transaction surfaceUpdateTransaction = new Transaction();
+                 if (creating) {
+                     updateOpaqueFlag();
+-                    final String name = "SurfaceView[" + viewRoot.getTitle().toString() + "]";
++                    final String name = viewRoot.getTitle().toString();
+                     createBlastSurfaceControls(viewRoot, name, surfaceUpdateTransaction);
+                 } else if (mSurfaceControl == null) {
+                     return;
+@@ -1220,7 +1220,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
+ 
+         if (mBackgroundControl == null) {
+             mBackgroundControl = new SurfaceControl.Builder(mSurfaceSession)
+-                    .setName("Background for " + name)
++                    .setName(name)
+                     .setLocalOwnerView(this)
+                     .setOpaque(true)
+                     .setColorLayer()
+-- 
+2.48.1
+

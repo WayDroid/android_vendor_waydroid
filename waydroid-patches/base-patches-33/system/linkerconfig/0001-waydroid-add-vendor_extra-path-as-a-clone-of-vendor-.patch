@@ -1,0 +1,148 @@
+From d612e8b8673daaf423be7e56bd2fc674e2091b68 Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Mon, 22 Mar 2021 10:21:49 +0700
+Subject: [PATCH 1/3] (waydroid) add /vendor_extra path as a clone of /vendor
+ entries
+
+Change-Id: Idbc768b7a2877f0cc82ae99d3802d3a1bbf45b7b
+---
+ contents/configuration/baseconfig.cc      | 1 +
+ contents/configuration/legacy.cc          | 1 +
+ contents/namespace/rs.cc                  | 3 +++
+ contents/namespace/sphal.cc               | 4 ++++
+ contents/namespace/systemdefault.cc       | 1 +
+ contents/namespace/unrestricteddefault.cc | 1 +
+ contents/namespace/vendordefault.cc       | 4 ++++
+ contents/namespace/vndk.cc                | 4 +++-
+ 8 files changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/contents/configuration/baseconfig.cc b/contents/configuration/baseconfig.cc
+index 667c5c3..8c75b12 100644
+--- a/contents/configuration/baseconfig.cc
++++ b/contents/configuration/baseconfig.cc
+@@ -63,6 +63,7 @@ android::linkerconfig::modules::Configuration CreateBaseConfiguration(
+ 
+       {"/odm/bin/", "vendor"},
+       {"/vendor/bin/", "vendor"},
++      {"/vendor_extra/bin/", "vendor"},
+       {"/data/nativetest/odm", "vendor"},
+       {"/data/nativetest64/odm", "vendor"},
+       {"/data/benchmarktest/odm", "vendor"},
+diff --git a/contents/configuration/legacy.cc b/contents/configuration/legacy.cc
+index b857a3d..379a72a 100644
+--- a/contents/configuration/legacy.cc
++++ b/contents/configuration/legacy.cc
+@@ -38,6 +38,7 @@ android::linkerconfig::modules::Configuration CreateLegacyConfiguration(
+       {Var("SYSTEM_EXT"), "legacy"},
+       {Var("PRODUCT"), "legacy"},
+       {"/vendor", "legacy"},
++      {"/vendor_extra", "legacy"},
+       {"/odm", "legacy"},
+       {"/sbin", "legacy"},
+       // Except for /postinstall, where only /system and /product are searched
+diff --git a/contents/namespace/rs.cc b/contents/namespace/rs.cc
+index 2533467..4e89f79 100644
+--- a/contents/namespace/rs.cc
++++ b/contents/namespace/rs.cc
+@@ -32,13 +32,16 @@ Namespace BuildRsNamespace([[maybe_unused]] const Context& ctx) {
+ 
+   ns.AddSearchPath("/odm/${LIB}/vndk-sp");
+   ns.AddSearchPath("/vendor/${LIB}/vndk-sp");
++  ns.AddSearchPath("/vendor_extra/${LIB}/vndk-sp");
+   ns.AddSearchPath("/apex/com.android.vndk.v" + Var("VENDOR_VNDK_VERSION") +
+                    "/${LIB}");
+   ns.AddSearchPath("/odm/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
++  ns.AddSearchPath("/vendor_extra/${LIB}");
+ 
+   ns.AddPermittedPath("/odm/${LIB}");
+   ns.AddPermittedPath("/vendor/${LIB}");
++  ns.AddPermittedPath("/vendor_extra/${LIB}");
+   ns.AddPermittedPath("/system/vendor/${LIB}");
+   ns.AddPermittedPath("/data");
+ 
+diff --git a/contents/namespace/sphal.cc b/contents/namespace/sphal.cc
+index 8a6e99e..f2ff216 100644
+--- a/contents/namespace/sphal.cc
++++ b/contents/namespace/sphal.cc
+@@ -41,9 +41,13 @@ Namespace BuildSphalNamespace([[maybe_unused]] const Context& ctx) {
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}/egl");
+   ns.AddSearchPath("/vendor/${LIB}/hw");
++  ns.AddSearchPath("/vendor_extra/${LIB}");
++  ns.AddSearchPath("/vendor_extra/${LIB}/egl");
++  ns.AddSearchPath("/vendor_extra/${LIB}/hw");
+ 
+   ns.AddPermittedPath("/odm/${LIB}");
+   ns.AddPermittedPath("/vendor/${LIB}");
++  ns.AddPermittedPath("/vendor_extra/${LIB}");
+   ns.AddPermittedPath("/system/vendor/${LIB}");
+ 
+   for (const auto& apex : ctx.GetApexModules()) {
+diff --git a/contents/namespace/systemdefault.cc b/contents/namespace/systemdefault.cc
+index 0d5c42b..e3732f0 100644
+--- a/contents/namespace/systemdefault.cc
++++ b/contents/namespace/systemdefault.cc
+@@ -103,6 +103,7 @@ Namespace BuildSystemDefaultNamespace([[maybe_unused]] const Context& ctx) {
+   }
+   if (!is_fully_treblelized) {
+     ns.AddSearchPath("/vendor/${LIB}");
++    ns.AddSearchPath("/vendor_extra/${LIB}");
+     ns.AddSearchPath("/odm/${LIB}");
+   }
+ 
+diff --git a/contents/namespace/unrestricteddefault.cc b/contents/namespace/unrestricteddefault.cc
+index 955874a..17805fd 100644
+--- a/contents/namespace/unrestricteddefault.cc
++++ b/contents/namespace/unrestricteddefault.cc
+@@ -32,6 +32,7 @@ Namespace BuildUnrestrictedDefaultNamespace([[maybe_unused]] const Context& ctx)
+   ns.AddSearchPath(Var("SYSTEM_EXT") + "/${LIB}");
+   ns.AddSearchPath("/odm/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
++  ns.AddSearchPath("/vendor_extra/${LIB}");
+   ns.AddSearchPath(Var("PRODUCT") + "/${LIB}");
+ 
+   ns.AddRequires(ctx.GetSystemRequireLibs());
+diff --git a/contents/namespace/vendordefault.cc b/contents/namespace/vendordefault.cc
+index a4a0b8a..4de1b08 100644
+--- a/contents/namespace/vendordefault.cc
++++ b/contents/namespace/vendordefault.cc
+@@ -39,9 +39,13 @@ Namespace BuildVendorNamespace([[maybe_unused]] const Context& ctx,
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}/hw");
+   ns.AddSearchPath("/vendor/${LIB}/egl");
++  ns.AddSearchPath("/vendor_extra/${LIB}");
++  ns.AddSearchPath("/vendor_extra/${LIB}/hw");
++  ns.AddSearchPath("/vendor_extra/${LIB}/egl");
+ 
+   ns.AddPermittedPath("/odm");
+   ns.AddPermittedPath("/vendor");
++  ns.AddPermittedPath("/vendor_extra");
+   ns.AddPermittedPath("/system/vendor");
+ 
+   if (ctx.IsVndkAvailable()) {
+diff --git a/contents/namespace/vndk.cc b/contents/namespace/vndk.cc
+index 36540c4..9b99f8f 100644
+--- a/contents/namespace/vndk.cc
++++ b/contents/namespace/vndk.cc
+@@ -58,7 +58,7 @@ Namespace BuildVndkNamespace([[maybe_unused]] const Context& ctx,
+     vndk_version = Var("PRODUCT_VNDK_VERSION");
+   } else {
+     // default for vendor
+-    lib_paths = {"/odm/${LIB}", "/vendor/${LIB}"};
++    lib_paths = {"/odm/${LIB}", "/vendor/${LIB}", "/vendor_extra/${LIB}"};
+     vndk_version = Var("VENDOR_VNDK_VERSION");
+   }
+ 
+@@ -84,6 +84,8 @@ Namespace BuildVndkNamespace([[maybe_unused]] const Context& ctx,
+     ns.AddPermittedPath("/odm/${LIB}/egl");
+     ns.AddPermittedPath("/vendor/${LIB}/hw");
+     ns.AddPermittedPath("/vendor/${LIB}/egl");
++    ns.AddPermittedPath("/vendor_extra/${LIB}/hw");
++    ns.AddPermittedPath("/vendor_extra/${LIB}/egl");
+     ns.AddPermittedPath("/system/vendor/${LIB}/hw");
+     ns.AddPermittedPath("/system/vendor/${LIB}/egl");
+ 
+-- 
+2.39.1
+

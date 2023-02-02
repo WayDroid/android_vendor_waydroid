@@ -1,0 +1,49 @@
+From 0e46a0d44f8425e824bdef790c3b1110cf549480 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 7 Mar 2021 17:15:20 +0200
+Subject: [PATCH 03/12] (halium) never set FLAT_BINDER_FLAG_TXN_SECURITY_CTX
+ flag
+
+It breaks binder transactions when run on a kernel without
+SELinux support.
+
+Change-Id: Ibff0f58a7867061a9353bf8bf5ab092ed562b65f
+---
+ libs/binder/Parcel.cpp       | 5 +++--
+ libs/binder/ProcessState.cpp | 3 ++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/libs/binder/Parcel.cpp b/libs/binder/Parcel.cpp
+index 58b0b35323..ea6bcf0d44 100644
+--- a/libs/binder/Parcel.cpp
++++ b/libs/binder/Parcel.cpp
+@@ -232,9 +232,10 @@ status_t Parcel::flattenBinder(const sp<IBinder>& binder) {
+                 schedBits = schedPolicyMask(policy, priority);
+             }
+             obj.flags = FLAT_BINDER_FLAG_ACCEPTS_FDS;
+-            if (local->isRequestingSid()) {
++            // Disabled for Halium
++            /*if (local->isRequestingSid()) {
+                 obj.flags |= FLAT_BINDER_FLAG_TXN_SECURITY_CTX;
+-            }
++            }*/
+             if (local->isInheritRt()) {
+                 obj.flags |= FLAT_BINDER_FLAG_INHERIT_RT;
+             }
+diff --git a/libs/binder/ProcessState.cpp b/libs/binder/ProcessState.cpp
+index 4a01d8176d..933967f38f 100644
+--- a/libs/binder/ProcessState.cpp
++++ b/libs/binder/ProcessState.cpp
+@@ -193,7 +193,8 @@ bool ProcessState::becomeContextManager()
+     AutoMutex _l(mLock);
+ 
+     flat_binder_object obj {
+-        .flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,
++        // Disabled for Halium
++        /*.flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,*/
+     };
+ 
+     int result = ioctl(mDriverFD, BINDER_SET_CONTEXT_MGR_EXT, &obj);
+-- 
+2.48.1
+

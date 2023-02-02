@@ -1,0 +1,62 @@
+From e88e21f111dd689c5b57ffdd9c027d902133232c Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sat, 11 Feb 2023 16:49:13 +0100
+Subject: [PATCH 08/13] Revert "init: Treat failure to create a process group
+ as fatal"
+
+This reverts commit 1bd17464473a2ea7dd1e1c5abef50fa3f30a56b5.
+---
+ init/service.cpp | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
+
+diff --git a/init/service.cpp b/init/service.cpp
+index 1be7f7c8c..c551fab2f 100644
+--- a/init/service.cpp
++++ b/init/service.cpp
+@@ -502,15 +502,10 @@ void Service::RunService(const std::optional<MountNamespace>& override_mount_nam
+ 
+     // Wait until the cgroups have been created and until the cgroup controllers have been
+     // activated.
+-    char byte = 0;
+-    if (read((*pipefd)[0], &byte, 1) < 0) {
++    if (std::byte byte; read((*pipefd)[0], &byte, 1) < 0) {
+         PLOG(ERROR) << "failed to read from notification channel";
+     }
+     pipefd.reset();
+-    if (!byte) {
+-        LOG(FATAL) << "Service '" << name_  << "' failed to start due to a fatal error";
+-        _exit(EXIT_FAILURE);
+-    }
+ 
+     if (task_profiles_.size() > 0 && !SetTaskProfiles(getpid(), task_profiles_)) {
+         LOG(ERROR) << "failed to set task profiles";
+@@ -668,14 +663,9 @@ Result<void> Service::Start() {
+                       limit_percent_ != -1 || !limit_property_.empty();
+     errno = -createProcessGroup(proc_attr_.uid, pid_, use_memcg);
+     if (errno != 0) {
+-        if (char byte = 0; write((*pipefd)[1], &byte, 1) < 0) {
+-            return ErrnoError() << "sending notification failed";
+-        }
+-        return Error() << "createProcessGroup(" << proc_attr_.uid << ", " << pid_
+-                       << ") failed for service '" << name_ << "'";
+-    }
+-
+-    if (use_memcg) {
++        PLOG(ERROR) << "createProcessGroup(" << proc_attr_.uid << ", " << pid_
++                    << ") failed for service '" << name_ << "'";
++    } else if (use_memcg) {
+         ConfigureMemcg();
+     }
+ 
+@@ -683,7 +673,7 @@ Result<void> Service::Start() {
+         LmkdRegister(name_, proc_attr_.uid, pid_, oom_score_adjust_);
+     }
+ 
+-    if (char byte = 1; write((*pipefd)[1], &byte, 1) < 0) {
++    if (write((*pipefd)[1], "", 1) < 0) {
+         return ErrnoError() << "sending notification failed";
+     }
+ 
+-- 
+2.48.1
+

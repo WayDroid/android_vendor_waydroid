@@ -1,0 +1,27 @@
+From d58bc82e6c88cf322bd6fb2d922c16ccb79dba22 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Tue, 20 Jul 2021 17:11:41 +0430
+Subject: [PATCH 2/3] sdk: Kill trust
+
+Change-Id: Iab85dbf55ff90c8a8c4c35920a904dd61c7b16f3
+---
+ config/lineage_sdk_common.mk | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/config/lineage_sdk_common.mk b/config/lineage_sdk_common.mk
+index db335995..1a27ba02 100644
+--- a/config/lineage_sdk_common.mk
++++ b/config/lineage_sdk_common.mk
+@@ -5,8 +5,7 @@ PRODUCT_COPY_FILES += \
+     vendor/lineage/config/permissions/org.lineageos.health.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.health.xml \
+     vendor/lineage/config/permissions/org.lineageos.livedisplay.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.livedisplay.xml \
+     vendor/lineage/config/permissions/org.lineageos.profiles.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.profiles.xml \
+-    vendor/lineage/config/permissions/org.lineageos.settings.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.settings.xml \
+-    vendor/lineage/config/permissions/org.lineageos.trust.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.trust.xml
++    vendor/lineage/config/permissions/org.lineageos.settings.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.settings.xml
+ 
+ # Lineage Platform Library
+ PRODUCT_PACKAGES += \
+-- 
+2.47.0
+

@@ -1,0 +1,29 @@
+From 7750c9457dff17f659d948d599b28319ef590e9e Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 3 Oct 2021 00:45:17 +0300
+Subject: [PATCH 2/6] (halium) do not attempt to mount partitions with metadata
+ encryption
+
+Change-Id: I77b72f49301879e960d7a8992c2736ccd5cc7096
+---
+ MetadataCrypt.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/MetadataCrypt.cpp b/MetadataCrypt.cpp
+index 50943fc..184c600 100644
+--- a/MetadataCrypt.cpp
++++ b/MetadataCrypt.cpp
+@@ -243,6 +243,10 @@ bool fscrypt_mount_metadata_encrypted(const std::string& blk_device, const std::
+     LOG(DEBUG) << "fscrypt_mount_metadata_encrypted: " << mount_point
+                << " encrypt: " << needs_encrypt << " format: " << should_format << " with "
+                << fs_type;
++
++    // Disabled for Halium
++    return false;
++
+     auto encrypted_state = android::base::GetProperty("ro.crypto.state", "");
+     if (encrypted_state != "" && encrypted_state != "encrypted") {
+         LOG(ERROR) << "fscrypt_mount_metadata_encrypted got unexpected starting state: "
+-- 
+2.39.2
+

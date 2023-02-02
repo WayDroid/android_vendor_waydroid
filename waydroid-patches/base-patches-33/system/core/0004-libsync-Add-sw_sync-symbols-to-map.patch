@@ -1,0 +1,27 @@
+From d1b08ae28dc114f81519a9337f2116846ff02e85 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Sat, 1 May 2021 22:48:25 +0800
+Subject: [PATCH 04/13] libsync: Add sw_sync symbols to map
+
+Change-Id: I82559f4681e2afb75001130315c5bf419303667a
+---
+ libsync/libsync.map.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/libsync/libsync.map.txt b/libsync/libsync.map.txt
+index aac6b570f..c2126e224 100644
+--- a/libsync/libsync.map.txt
++++ b/libsync/libsync.map.txt
+@@ -23,6 +23,9 @@ LIBSYNC {
+     sync_fence_info; # llndk
+     sync_pt_info; # llndk
+     sync_fence_info_free; # llndk
++    sw_sync_timeline_create;
++    sw_sync_timeline_inc;
++    sw_sync_fence_create;
+   local:
+     *;
+ };
+-- 
+2.48.1
+

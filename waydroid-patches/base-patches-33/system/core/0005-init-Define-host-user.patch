@@ -1,0 +1,28 @@
+From 47947fff7be34ffba6b790dab21b90b565c68bf9 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Wed, 25 Aug 2021 23:15:59 +0800
+Subject: [PATCH 05/13] init: Define "host" user
+
+Change-Id: I6df4fcbc4af48c51c385f8413855f74afc146a45
+---
+ init/util.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/init/util.cpp b/init/util.cpp
+index 14b8b506e..d17613a08 100644
+--- a/init/util.cpp
++++ b/init/util.cpp
+@@ -66,6 +66,10 @@ void (*trigger_shutdown)(const std::string& command) = nullptr;
+ // DecodeUid() - decodes and returns the given string, which can be either the
+ // numeric or name representation, into the integer uid or gid.
+ Result<uid_t> DecodeUid(const std::string& name) {
++    if (name == "host") {
++        std::string uid = android::base::GetProperty("waydroid.host.uid", "1000");
++        return static_cast<uid_t>(strtoul(uid.c_str(), 0, 0));
++    }
+     if (isalpha(name[0])) {
+         passwd* pwd = getpwnam(name.c_str());
+         if (!pwd) return ErrnoError() << "getpwnam failed";
+-- 
+2.48.1
+

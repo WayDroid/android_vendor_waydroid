@@ -1,0 +1,57 @@
+From 52ae26cfcae8e9c58079c3281329921a5dbf9d52 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Wed, 3 May 2023 18:28:45 +0200
+Subject: [PATCH 7/7] libm: Remove traces of SSE4.1 assembly from x86
+
+Change-Id: I3b8bb6291466d8af61ab421e7ea9cf10e5224956
+---
+ libm/Android.bp | 16 ----------------
+ 1 file changed, 16 deletions(-)
+
+diff --git a/libm/Android.bp b/libm/Android.bp
+index 7469cde0a..d4cfad28e 100644
+--- a/libm/Android.bp
++++ b/libm/Android.bp
+@@ -347,16 +347,8 @@ cc_library {
+         x86: {
+             srcs: [
+                 "i387/fenv.c",
+-                "x86/ceil.S",
+-                "x86/ceilf.S",
+-                "x86/floor.S",
+-                "x86/floorf.S",
+-                "x86/rint.S",
+-                "x86/rintf.S",
+                 "x86/sqrt.S",
+                 "x86/sqrtf.S",
+-                "x86/trunc.S",
+-                "x86/truncf.S",
+                 "x86/e_acos.S",
+                 "x86/e_asin.S",
+                 "x86/e_atan2.S",
+@@ -390,22 +382,14 @@ cc_library {
+                 "upstream-freebsd/lib/msun/src/e_sqrtf.c",
+                 "upstream-freebsd/lib/msun/src/s_atan.c",
+                 "upstream-freebsd/lib/msun/src/s_cbrt.c",
+-                "upstream-freebsd/lib/msun/src/s_ceil.c",
+-                "upstream-freebsd/lib/msun/src/s_ceilf.c",
+                 "upstream-freebsd/lib/msun/src/s_cos.c",
+                 "upstream-freebsd/lib/msun/src/s_expm1.c",
+-                "upstream-freebsd/lib/msun/src/s_floor.c",
+-                "upstream-freebsd/lib/msun/src/s_floorf.c",
+                 "upstream-freebsd/lib/msun/src/s_log1p.c",
+                 "upstream-freebsd/lib/msun/src/s_lrint.c",
+                 "upstream-freebsd/lib/msun/src/s_lrintf.c",
+-                "upstream-freebsd/lib/msun/src/s_rint.c",
+-                "upstream-freebsd/lib/msun/src/s_rintf.c",
+                 "upstream-freebsd/lib/msun/src/s_sin.c",
+                 "upstream-freebsd/lib/msun/src/s_tan.c",
+                 "upstream-freebsd/lib/msun/src/s_tanh.c",
+-                "upstream-freebsd/lib/msun/src/s_trunc.c",
+-                "upstream-freebsd/lib/msun/src/s_truncf.c",
+             ],
+             local_include_dirs: ["i387"],
+             pack_relocations: false,
+-- 
+2.40.1
+

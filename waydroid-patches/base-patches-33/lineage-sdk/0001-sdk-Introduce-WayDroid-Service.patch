@@ -1,0 +1,1485 @@
+From 552b326b1de4a0cca814401b64097c6f9dec14af Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Fri, 30 Jul 2021 23:27:33 +0430
+Subject: [PATCH] sdk: Introduce WayDroid Service
+
+Change-Id: Ic8c45e896b7f08b371aaa78c75188679b4f36ce0
+---
+ Android.mk                                    |   2 +-
+ api/lineage_current.txt                       |  60 +++
+ .../platform/internal/WayDroidService.java    | 468 ++++++++++++++++++
+ lineage/res/res/values/config.xml             |   1 +
+ .../app/LineageContextConstants.java          |  38 +-
+ sdk/src/java/lineageos/waydroid/AppInfo.aidl  |  20 +
+ sdk/src/java/lineageos/waydroid/AppInfo.java  |  57 +++
+ .../java/lineageos/waydroid/Clipboard.java    |  98 ++++
+ sdk/src/java/lineageos/waydroid/Hardware.java | 140 ++++++
+ .../java/lineageos/waydroid/IClipboard.aidl   |  23 +
+ .../java/lineageos/waydroid/IHardware.aidl    |  26 +
+ .../java/lineageos/waydroid/IPlatform.aidl    |  38 ++
+ .../java/lineageos/waydroid/IUserMonitor.aidl |  23 +
+ sdk/src/java/lineageos/waydroid/Platform.java | 235 +++++++++
+ .../java/lineageos/waydroid/UserMonitor.java  | 100 ++++
+ 15 files changed, 1323 insertions(+), 6 deletions(-)
+ create mode 100644 lineage/lib/main/java/org/lineageos/platform/internal/WayDroidService.java
+ create mode 100644 sdk/src/java/lineageos/waydroid/AppInfo.aidl
+ create mode 100644 sdk/src/java/lineageos/waydroid/AppInfo.java
+ create mode 100644 sdk/src/java/lineageos/waydroid/Clipboard.java
+ create mode 100644 sdk/src/java/lineageos/waydroid/Hardware.java
+ create mode 100644 sdk/src/java/lineageos/waydroid/IClipboard.aidl
+ create mode 100644 sdk/src/java/lineageos/waydroid/IHardware.aidl
+ create mode 100644 sdk/src/java/lineageos/waydroid/IPlatform.aidl
+ create mode 100644 sdk/src/java/lineageos/waydroid/IUserMonitor.aidl
+ create mode 100644 sdk/src/java/lineageos/waydroid/Platform.java
+ create mode 100644 sdk/src/java/lineageos/waydroid/UserMonitor.java
+
+diff --git a/Android.mk b/Android.mk
+index 412ce301..3accd69a 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -29,7 +29,7 @@ include $(CLEAR_VARS)
+ lineage_platform_res := APPS/org.lineageos.platform-res_intermediates/aapt
+ 
+ # List of packages used in lineage-api-stubs
+-lineage_stub_packages := lineageos.app:lineageos.content:lineageos.hardware:lineageos.media:lineageos.os:lineageos.preference:lineageos.profiles:lineageos.providers:lineageos.platform:lineageos.util:lineageos.trust
++lineage_stub_packages := lineageos.app:lineageos.content:lineageos.hardware:lineageos.media:lineageos.os:lineageos.preference:lineageos.profiles:lineageos.providers:lineageos.platform:lineageos.util:lineageos.trust:lineageos.waydroid
+ 
+ lineage_framework_module := $(LOCAL_INSTALLED_MODULE)
+ 
+diff --git a/api/lineage_current.txt b/api/lineage_current.txt
+index 03c9aeec..0e46f61c 100644
+--- a/api/lineage_current.txt
++++ b/api/lineage_current.txt
+@@ -845,3 +845,63 @@ package lineageos.util {
+   }
+ 
+ }
++
++package lineageos.waydroid {
++
++  public class AppInfo implements android.os.Parcelable {
++    ctor public AppInfo();
++    method public int describeContents();
++    method public void writeToParcel(android.os.Parcel, int);
++    method public void readFromParcel(android.os.Parcel);
++  }
++
++  public class Clipboard {
++    method public static lineageos.waydroid.Clipboard getInstance(android.content.Context);
++    method public static lineageos.waydroid.Clipboard getService();
++    method public void sendClipboardData(String);
++    method public String getClipboardData();
++  }
++
++  public class Hardware {
++    method public static lineageos.waydroid.Hardware getInstance(android.content.Context);
++    method public static lineageos.waydroid.Hardware getService();
++    field public static final int ERROR_UNDEFINED = -1; // 0xffffffff
++    method public int enableNFC(boolean);
++    method public int enableBluetooth(boolean);
++    method public void suspend();
++    method public void reboot();
++    method public void upgrade(String, int, String, int);
++  }
++
++  public class Platform {
++    method public static lineageos.waydroid.Platform getInstance(android.content.Context);
++    method public static lineageos.waydroid.Platform getService();
++    field public static final int ERROR_UNDEFINED = -1; // 0xffffffff
++    field public static final int SETTINGS_SECURE = 0; // 0x0
++    field public static final int SETTINGS_SYSTEM = 1; // 0x1
++    field public static final int SETTINGS_GLOBAL = 2; // 0x2
++    method public String getprop(String, String);
++    method public void setprop(String, String);
++    method public java.util.List<lineageos.waydroid.AppInfo> getAppsInfo();
++    method public lineageos.waydroid.AppInfo getAppInfo(String);
++    method public int installApp(String);
++    method public int removeApp(String);
++    method public void launchApp(String);
++    method public String getAppName(String);
++    method public void settingsPutString(int, String, String);
++    method public String settingsGetString(int, String);
++    method public void settingsPutInt(int, String, int);
++    method public int settingsGetInt(int, String);
++  }
++
++  public class UserMonitor {
++    method public static lineageos.waydroid.UserMonitor getInstance(android.content.Context);
++    method public static lineageos.waydroid.UserMonitor getService();
++    field public static final int WAYDROID_PACKAGE_ADDED = 0; // 0x0
++    field public static final int WAYDROID_PACKAGE_REMOVED = 1; // 0x1
++    field public static final int WAYDROID_PACKAGE_UPDATED = 2; // 0x2
++    method public void userUnlocked(int);
++    method public void packageStateChanged(int, String, int);
++  }
++
++}
+diff --git a/lineage/lib/main/java/org/lineageos/platform/internal/WayDroidService.java b/lineage/lib/main/java/org/lineageos/platform/internal/WayDroidService.java
+new file mode 100644
+index 00000000..474492d0
+--- /dev/null
++++ b/lineage/lib/main/java/org/lineageos/platform/internal/WayDroidService.java
+@@ -0,0 +1,468 @@
++/*
++ * Copyright (C) 2021 The WayDroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.lineageos.platform.internal;
++
++import android.app.PendingIntent;
++import android.annotation.NonNull;
++import android.content.ActivityNotFoundException;
++import android.content.Context;
++import android.content.Intent;
++import android.content.pm.ApplicationInfo;
++import android.content.pm.PackageInstaller;
++import android.content.pm.PackageManager;
++import android.content.pm.PackageManager.NameNotFoundException;
++import android.content.pm.ResolveInfo;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.SystemProperties;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.util.Log;
++import android.net.Uri;
++import android.graphics.drawable.Drawable;
++import android.graphics.drawable.BitmapDrawable;
++import android.graphics.Bitmap;
++import android.graphics.Bitmap.Config;
++import android.graphics.Canvas;
++
++import com.android.internal.content.PackageMonitor;
++import com.android.internal.os.BackgroundThread;
++
++import lineageos.app.LineageContextConstants;
++import lineageos.waydroid.AppInfo;
++import lineageos.waydroid.IPlatform;
++import lineageos.waydroid.Platform;
++import lineageos.waydroid.IUserMonitor;
++import lineageos.waydroid.UserMonitor;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.io.File;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++import java.io.FileOutputStream;
++
++import libcore.io.IoUtils;
++
++/** @hide **/
++public class WayDroidService extends LineageSystemService {
++    private static final String TAG = "WayDroidService";
++    private static final String BROADCAST_ACTION_INSTALL =
++            "org.lineageos.platform.waydroid.ACTION_INSTALL_COMMIT";
++    private static final String BROADCAST_ACTION_UNINSTALL =
++            "org.lineageos.platform.waydroid.ACTION_UNINSTALL_COMMIT";
++    private static final String ICONS_DIR = "/data/icons";
++
++    private Context mContext;
++    private PackageManager mPm = null;
++    private UserMonitor mUM = null;
++
++    public WayDroidService(Context context) {
++        super(context);
++        mContext = context;
++        if (context != null) {
++            mPm = context.getPackageManager();
++        } else {
++            Log.w(TAG, "No context available");
++        }
++    }
++
++    @Override
++    public String getFeatureDeclaration() {
++        return LineageContextConstants.Features.HARDWARE_ABSTRACTION;
++    }
++
++    @Override
++    public void onStart() {
++        publishBinderService(LineageContextConstants.WAYDROID_PLATFORM_SERVICE, mPlatformService);
++        if (mContext != null) {
++            mUM = UserMonitor.getInstance(mContext);
++        } else {
++            Log.w(TAG, "No context available");
++        }
++        if (mUM != null) {
++            registerPackageMonitor();
++        }
++    }
++
++    @Override
++    public void onUserUnlocked(@NonNull TargetUser user) {
++        List<ApplicationInfo> apps = mPm.getInstalledApplications(0);
++        for (int n = 0; n < apps.size(); n++) {
++            ApplicationInfo appInfo = apps.get(n);
++
++            Intent launchIntent = mPm.getLaunchIntentForPackage(appInfo.packageName);
++            if (launchIntent == null) {
++                continue;
++            }
++            saveApplicationIcon(appInfo.packageName);
++        }
++        if (mUM != null) {
++            mUM.userUnlocked(user.getUserIdentifier());
++        }
++        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
++        homeIntent.addCategory(Intent.CATEGORY_HOME);
++        ResolveInfo defaultLauncher = mPm.resolveActivity(homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
++        if (defaultLauncher.activityInfo != null) {
++            String nameOfLauncherPkg = defaultLauncher.activityInfo.packageName;
++            SystemProperties.set("waydroid.blacklist_apps", nameOfLauncherPkg);
++        }
++    }
++
++    private void saveApplicationIcon(String packageName) {
++        Drawable icon = null;
++        try {
++            icon = mPm.getApplicationIcon(packageName);
++        } catch (PackageManager.NameNotFoundException ex) {
++            return;
++        }
++        if (icon == null)
++            return;
++
++        Bitmap iconBitmap = drawableToBitmap(icon);
++        File imageFile = new File(ICONS_DIR, packageName + ".png");
++        FileOutputStream fileOutStream = null;
++        try {
++            fileOutStream = new FileOutputStream(imageFile);
++            iconBitmap.compress(Bitmap.CompressFormat.PNG, 90, fileOutStream);
++            fileOutStream.close();
++        } catch (IOException e) {
++            Log.e("app", e.getMessage());
++            if (fileOutStream != null) {
++                try {
++                    fileOutStream.close();
++                } catch (IOException e1) {
++                    e1.printStackTrace();
++                }
++            }
++        }
++        imageFile.setReadable(true, false);
++        imageFile.setWritable(true, false);
++    }
++
++    private Bitmap drawableToBitmap(Drawable drawable) {
++        if (drawable instanceof BitmapDrawable)
++            return ((BitmapDrawable)drawable).getBitmap();
++
++        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Config.ARGB_8888);
++        Canvas canvas = new Canvas(bitmap);
++        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
++        drawable.draw(canvas);
++
++        return bitmap;
++    }
++
++    private void registerPackageMonitor() {
++        PackageMonitor monitor = new PackageMonitor() {
++            @Override
++            public void onPackageAdded(String packageName, int uid) {
++                if (mUM != null) {
++                    mUM.packageStateChanged(UserMonitor.WAYDROID_PACKAGE_ADDED, packageName, uid);
++                }
++                saveApplicationIcon(packageName);
++            }
++
++            @Override
++            public void onPackageRemoved(String packageName, int uid) {
++                if (mUM != null) {
++                    mUM.packageStateChanged(UserMonitor.WAYDROID_PACKAGE_REMOVED, packageName, uid);
++                }
++                File appIcon = new File(ICONS_DIR + "/" + packageName + ".png");
++                if (appIcon.exists())
++                    appIcon.delete();
++            }
++
++            @Override
++            public void onPackageUpdateFinished(String packageName, int uid) {
++                if (mUM != null) {
++                    mUM.packageStateChanged(UserMonitor.WAYDROID_PACKAGE_UPDATED, packageName, uid);
++                }
++                saveApplicationIcon(packageName);
++            }
++        };
++
++        monitor.register(mContext, BackgroundThread.getHandler().getLooper(), UserHandle.ALL, true);
++    }
++
++    /* Service */
++    private final IBinder mPlatformService = new IPlatform.Stub() {
++        @Override
++        public String getprop(String prop, String default_value) {
++            return SystemProperties.get(prop, default_value);
++        }
++
++        @Override
++        public void setprop(String prop, String value) {
++            SystemProperties.set(prop, value);
++        }
++
++        @Override
++        public List<AppInfo> getAppsInfo() {
++            List<AppInfo> result = new ArrayList<>();
++
++            if (mPm == null)
++                return result;
++
++            List<ApplicationInfo> apps = mPm.getInstalledApplications(0);
++            for (int n = 0; n < apps.size(); n++) {
++                ApplicationInfo appInfo = apps.get(n);
++
++                Intent launchIntent = mPm.getLaunchIntentForPackage(appInfo.packageName);
++                if (launchIntent == null) {
++                    continue;
++                }
++
++                String name = appInfo.name;
++                CharSequence label = appInfo.loadLabel(mPm);
++                if (label != null)
++                    name = label.toString();
++
++                AppInfo info = new AppInfo();
++                info.name = name;
++                info.packageName = appInfo.packageName;
++                info.action = launchIntent.getAction();
++                if (launchIntent.getData() != null)
++                    info.launchIntent = launchIntent.getData().toString();
++                else
++                    info.launchIntent = "";
++
++                info.componentClassName = launchIntent.getComponent().getClassName();
++                info.componentPackageName = launchIntent.getComponent().getPackageName();
++                info.categories = new ArrayList<String>(launchIntent.getCategories());
++                result.add(info);
++            }
++            return result;
++        }
++
++        @Override
++        public AppInfo getAppInfo(String packageName) {
++            if (mPm == null)
++                return null;
++
++            ApplicationInfo appInfo;
++            try {
++                appInfo = mPm.getApplicationInfo(packageName, 0);
++            } catch (NameNotFoundException e) {
++                return null;
++            }
++            Intent launchIntent = mPm.getLaunchIntentForPackage(appInfo.packageName);
++            if (launchIntent == null) {
++                return null;
++            }
++
++            String name = appInfo.name;
++            CharSequence label = appInfo.loadLabel(mPm);
++            if (label != null)
++                name = label.toString();
++
++            AppInfo info = new AppInfo();
++            info.name = name;
++            info.packageName = appInfo.packageName;
++            info.action = launchIntent.getAction();
++            if (launchIntent.getData() != null)
++                info.launchIntent = launchIntent.getData().toString();
++            else
++                info.launchIntent = "";
++
++            info.componentClassName = launchIntent.getComponent().getClassName();
++            info.componentPackageName = launchIntent.getComponent().getPackageName();
++            info.categories = new ArrayList<String>(launchIntent.getCategories());
++            return info;
++        }
++
++        @Override
++        public int installApp(String path) {
++            int ret = 0;
++            final Uri packageURI;
++
++            // Populate apkURI, must be present
++            if (path != null) {
++                packageURI = Uri.fromFile(new File(path));
++            } else {
++                return -1;
++            }
++
++            final PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
++                    PackageInstaller.SessionParams.MODE_FULL_INSTALL);
++            final PackageInstaller packageInstaller = mPm.getPackageInstaller();
++            PackageInstaller.Session session = null;
++            try {
++                final int sessionId = packageInstaller.createSession(params);
++                final byte[] buffer = new byte[65536];
++                session = packageInstaller.openSession(sessionId);
++                final InputStream in = mContext.getContentResolver().openInputStream(packageURI);
++                final OutputStream out = session.openWrite("PackageInstaller", 0, -1 /* sizeBytes, unknown */);
++                try {
++                    int c;
++                    while ((c = in.read(buffer)) != -1) {
++                        out.write(buffer, 0, c);
++                    }
++                    session.fsync(out);
++                } finally {
++                    IoUtils.closeQuietly(in);
++                    IoUtils.closeQuietly(out);
++                }
++                // Create a PendingIntent and use it to generate the IntentSender
++                Intent broadcastIntent = new Intent(BROADCAST_ACTION_INSTALL);
++                PendingIntent pendingIntent = PendingIntent.getBroadcast(
++                        mContext,
++                        sessionId,
++                        broadcastIntent,
++                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
++                session.commit(pendingIntent.getIntentSender());
++            } catch (Exception e) {
++                Log.e(TAG, "Failure", e);
++                ret = -1;
++            } finally {
++                IoUtils.closeQuietly(session);
++            }
++
++            return ret;
++        }
++
++        @Override
++        public int removeApp(String packageName) {
++          final PackageInstaller packageInstaller = mPm.getPackageInstaller();
++
++          mPm.setInstallerPackageName(packageName, mContext.getPackageName());
++          // Create a PendingIntent and use it to generate the IntentSender
++          Intent broadcastIntent = new Intent(BROADCAST_ACTION_UNINSTALL);
++          PendingIntent pendingIntent = PendingIntent.getBroadcast(
++                  mContext, // context
++                  0, // arbitary
++                  broadcastIntent,
++                  PendingIntent.FLAG_UPDATE_CURRENT);
++          packageInstaller.uninstall(packageName, pendingIntent.getIntentSender());
++
++          return 0;
++        }
++
++        @Override
++        public void launchApp(String packageName) {
++            if (mPm == null || mContext == null)
++                return;
++
++            ApplicationInfo appInfo;
++            try {
++                appInfo = mPm.getApplicationInfo(packageName, 0);
++            } catch (NameNotFoundException e) {
++                Log.e(TAG, e.getMessage());
++                return;
++            }
++            Intent launchIntent = mPm.getLaunchIntentForPackage(appInfo.packageName);
++            if (launchIntent == null) {
++                return;
++            }
++
++            mContext.startActivity(launchIntent);
++        }
++
++        @Override
++        public String launchIntent(String action, String uri) {
++            if (mPm == null || mContext == null)
++                return "";
++
++            Intent i;
++            if (uri == null || uri.isEmpty())
++                i = new Intent(action);
++            else
++                i = new Intent(action, Uri.parse(uri));
++            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++
++            ResolveInfo ri = mPm.resolveActivity(i, 0);
++            try {
++                mContext.startActivity(i);
++            } catch (ActivityNotFoundException ignored) {}
++
++            if (ri != null) {
++                return ri.activityInfo.packageName;
++            }
++            return "";
++        }
++
++        @Override
++        public String getAppName(String packageName) {
++            if (mPm == null || mContext == null)
++                return "";
++
++            ApplicationInfo appInfo;
++            try {
++                appInfo = mPm.getApplicationInfo(packageName, 0);
++            } catch (NameNotFoundException e) {
++                Log.e(TAG, e.getMessage());
++                return "";
++            }
++            String name = appInfo.name;
++            CharSequence label = appInfo.loadLabel(mPm);
++            if (label != null)
++                name = label.toString();
++
++            return name;
++        }
++
++        @Override
++        public void settingsPutString(int mode, String key, String value) {
++            if (mode == Platform.SETTINGS_SECURE) {
++                Settings.Secure.putString(mContext.getContentResolver(), key, value);
++            } else if (mode == Platform.SETTINGS_SYSTEM) {
++                Settings.System.putString(mContext.getContentResolver(), key, value);
++            } else if (mode == Platform.SETTINGS_GLOBAL) {
++                Settings.Global.putString(mContext.getContentResolver(), key, value);
++            }
++        }
++
++        @Override
++        public String settingsGetString(int mode, String key) {
++            if (mode == Platform.SETTINGS_SECURE) {
++                return Settings.Secure.getString(mContext.getContentResolver(), key);
++            } else if (mode == Platform.SETTINGS_SYSTEM) {
++                return Settings.System.getString(mContext.getContentResolver(), key);
++            } else if (mode == Platform.SETTINGS_GLOBAL) {
++                return Settings.Global.getString(mContext.getContentResolver(), key);
++            }
++            return "";
++        }
++
++        @Override
++        public void settingsPutInt(int mode, String key, int value) {
++            if (mode == Platform.SETTINGS_SECURE) {
++                Settings.Secure.putInt(mContext.getContentResolver(), key, value);
++            } else if (mode == Platform.SETTINGS_SYSTEM) {
++                Settings.System.putInt(mContext.getContentResolver(), key, value);
++            } else if (mode == Platform.SETTINGS_GLOBAL) {
++                Settings.Global.putInt(mContext.getContentResolver(), key, value);
++            }
++        }
++
++        @Override
++        public int settingsGetInt(int mode, String key) {
++            try {
++                if (mode == Platform.SETTINGS_SECURE) {
++                    return Settings.Secure.getInt(mContext.getContentResolver(), key);
++                } else if (mode == Platform.SETTINGS_SYSTEM) {
++                    return Settings.System.getInt(mContext.getContentResolver(), key);
++                } else if (mode == Platform.SETTINGS_GLOBAL) {
++                    return Settings.Global.getInt(mContext.getContentResolver(), key);
++                }
++            } catch (Settings.SettingNotFoundException e) {
++                Log.e(TAG, e.getMessage());
++            }
++            return Platform.ERROR_UNDEFINED;
++        }
++    };
++}
+diff --git a/lineage/res/res/values/config.xml b/lineage/res/res/values/config.xml
+index de59ce52..cbdd57ea 100644
+--- a/lineage/res/res/values/config.xml
++++ b/lineage/res/res/values/config.xml
+@@ -107,6 +107,7 @@
+         <item>org.lineageos.platform.internal.LineageSettingsService</item>
+         <item>org.lineageos.platform.internal.LineageGlobalActionsService</item>
+         <item>org.lineageos.platform.internal.health.HealthInterfaceService</item>
++        <item>org.lineageos.platform.internal.WayDroidService</item>
+     </string-array>
+ 
+     <!-- The LineageSystemServer class that is invoked from Android's SystemServer -->
+diff --git a/sdk/src/java/lineageos/app/LineageContextConstants.java b/sdk/src/java/lineageos/app/LineageContextConstants.java
+index 20dc63e3..379004d4 100644
+--- a/sdk/src/java/lineageos/app/LineageContextConstants.java
++++ b/sdk/src/java/lineageos/app/LineageContextConstants.java
+@@ -70,6 +70,17 @@ public final class LineageContextConstants {
+      */
+     public static final String LINEAGE_LIVEDISPLAY_SERVICE = "lineagelivedisplay";
+ 
++    /**
++     * Use with {@link android.content.Context#getSystemService} to retrieve a
++     * {@link lineageos.health.HealthInterface} to access the Health interface.
++     *
++     * @see android.content.Context#getSystemService
++     * @see lineageos.health.HealthInterface
++     *
++     * @hide
++     */
++    public static final String LINEAGE_HEALTH_INTERFACE = "lineagehealth";
++
+     /**
+      * Use with {@link android.content.Context#getSystemService} to retrieve a
+      * {@link lineageos.trust.TrustInterface} to access the Trust interface.
+@@ -82,15 +93,32 @@ public final class LineageContextConstants {
+     public static final String LINEAGE_TRUST_INTERFACE = "lineagetrust";
+ 
+     /**
+-     * Use with {@link android.content.Context#getSystemService} to retrieve a
+-     * {@link lineageos.health.HealthInterface} to access the Health interface.
++     * Manages waydroid platform
+      *
+-     * @see android.content.Context#getSystemService
+-     * @see lineageos.health.HealthInterface
++     * @hide
++     */
++    public static final String WAYDROID_PLATFORM_SERVICE = "waydroidplatform";
++
++    /**
++     * Manages waydroid clipboard
+      *
+      * @hide
+      */
+-    public static final String LINEAGE_HEALTH_INTERFACE = "lineagehealth";
++    public static final String WAYDROID_CLIPBOARD_SERVICE = "waydroidclipboard";
++
++    /**
++     * Manages waydroid hardware
++     *
++     * @hide
++     */
++    public static final String WAYDROID_HARDWARE_SERVICE = "waydroidhardware";
++
++    /**
++     * Monitors waydroid user
++     *
++     * @hide
++     */
++    public static final String WAYDROID_USERMONITOR_SERVICE = "waydroidusermonitor";
+ 
+     /**
+      * Update power menu (GlobalActions)
+diff --git a/sdk/src/java/lineageos/waydroid/AppInfo.aidl b/sdk/src/java/lineageos/waydroid/AppInfo.aidl
+new file mode 100644
+index 00000000..3d427ce5
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/AppInfo.aidl
+@@ -0,0 +1,20 @@
++/*
++**
++** Copyright (C) 2021 The WayDroid Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++
++package lineageos.waydroid;
++
++parcelable AppInfo;
+diff --git a/sdk/src/java/lineageos/waydroid/AppInfo.java b/sdk/src/java/lineageos/waydroid/AppInfo.java
+new file mode 100644
+index 00000000..f0e99830
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/AppInfo.java
+@@ -0,0 +1,57 @@
++package lineageos.waydroid;
++
++import android.os.Parcel;
++import android.os.Parcelable;
++
++import java.util.List;
++
++public final class AppInfo implements Parcelable {
++    public String name;
++    public String packageName;
++    public String action;
++    public String launchIntent;
++    public String componentPackageName;
++    public String componentClassName;
++    public List<String> categories;
++
++    public static final Parcelable.Creator<AppInfo> CREATOR = new Parcelable.Creator<AppInfo>() {
++        public AppInfo createFromParcel(Parcel in) {
++            return new AppInfo(in);
++        }
++
++        public AppInfo[] newArray(int size) {
++            return new AppInfo[size];
++        }
++    };
++
++    public AppInfo() {
++    }
++
++    private AppInfo(Parcel in) {
++        readFromParcel(in);
++    }
++
++    public void writeToParcel(Parcel out, int flags) {
++        out.writeString(name);
++        out.writeString(packageName);
++        out.writeString(action);
++        out.writeString(launchIntent);
++        out.writeString(componentPackageName);
++        out.writeString(componentClassName);
++        out.writeStringList(categories);
++    }
++
++    public void readFromParcel(Parcel in) {
++        name = in.readString();
++        packageName = in.readString();
++        action = in.readString();
++        launchIntent = in.readString();
++        componentPackageName = in.readString();
++        componentClassName = in.readString();
++        in.readStringList(categories);
++    }
++
++    public int describeContents() {
++        return 0;
++    }
++}
+diff --git a/sdk/src/java/lineageos/waydroid/Clipboard.java b/sdk/src/java/lineageos/waydroid/Clipboard.java
+new file mode 100644
+index 00000000..ba5a333a
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/Clipboard.java
+@@ -0,0 +1,98 @@
++/**
++ * Copyright (C) 2021 The WayDroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package lineageos.waydroid;
++
++import android.content.Context;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.util.Log;
++
++import lineageos.app.LineageContextConstants;
++
++public class Clipboard {
++    private static final String TAG = "WayDroidClipboard";
++
++    private static IClipboard sService;
++    private static Clipboard sInstance;
++
++    private Context mContext;
++
++    private Clipboard(Context context) {
++        Context appContext = context.getApplicationContext();
++        mContext = appContext == null ? context : appContext;
++        sService = getService();
++    }
++
++    /**
++     * Get or create an instance of the {@link lineageos.waydroid.Clipboard}
++     *
++     * @param context Used to get the service
++     * @return {@link Clipboard}
++     */
++    public static Clipboard getInstance(Context context) {
++        if (sInstance == null) {
++            sInstance = new Clipboard(context);
++        }
++        return sInstance;
++    }
++
++    /** @hide **/
++    public static IClipboard getService() {
++        if (sService != null) {
++            return sService;
++        }
++        IBinder b = ServiceManager.getService(LineageContextConstants.WAYDROID_CLIPBOARD_SERVICE);
++
++        if (b == null) {
++            Log.e(TAG, "null service. SAD!");
++            return null;
++        }
++
++        sService = IClipboard.Stub.asInterface(b);
++        return sService;
++    }
++
++    /** @hide **/
++    public void sendClipboardData(String value) {
++        IClipboard service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.sendClipboardData(value);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public String getClipboardData() {
++        IClipboard service = getService();
++        if (service == null) {
++            return "";
++        }
++        try {
++            String paste = service.getClipboardData();
++            return paste != null ? paste : "";
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return "";
++    }
++
++}
+diff --git a/sdk/src/java/lineageos/waydroid/Hardware.java b/sdk/src/java/lineageos/waydroid/Hardware.java
+new file mode 100644
+index 00000000..0d25459a
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/Hardware.java
+@@ -0,0 +1,140 @@
++/**
++ * Copyright (C) 2021 The WayDroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package lineageos.waydroid;
++
++import android.content.Context;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.util.Log;
++
++import lineageos.app.LineageContextConstants;
++
++public class Hardware {
++    private static final String TAG = "WayDroidHardware";
++
++    /**
++     * Unable to determine status, an error occured
++     */
++    public static final int ERROR_UNDEFINED = -1;
++
++    private static IHardware sService;
++    private static Hardware sInstance;
++
++    private Context mContext;
++
++    private Hardware(Context context) {
++        Context appContext = context.getApplicationContext();
++        mContext = appContext == null ? context : appContext;
++        sService = getService();
++    }
++
++    /**
++     * Get or create an instance of the {@link lineageos.waydroid.Hardware}
++     *
++     * @param context Used to get the service
++     * @return {@link Hardware}
++     */
++    public static Hardware getInstance(Context context) {
++        if (sInstance == null) {
++            sInstance = new Hardware(context);
++        }
++        return sInstance;
++    }
++
++    /** @hide **/
++    public static IHardware getService() {
++        if (sService != null) {
++            return sService;
++        }
++        IBinder b = ServiceManager.getService(LineageContextConstants.WAYDROID_HARDWARE_SERVICE);
++
++        if (b == null) {
++            Log.e(TAG, "null service. SAD!");
++            return null;
++        }
++
++        sService = IHardware.Stub.asInterface(b);
++        return sService;
++    }
++
++    /** @hide **/
++    public int enableNFC(boolean enable) {
++        IHardware service = getService();
++        if (service == null) {
++            return ERROR_UNDEFINED;
++        }
++        try {
++            return service.enableNFC(enable);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return ERROR_UNDEFINED;
++    }
++
++    public int enableBluetooth(boolean enable) {
++        IHardware service = getService();
++        if (service == null) {
++            return ERROR_UNDEFINED;
++        }
++        try {
++            return service.enableBluetooth(enable);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return ERROR_UNDEFINED;
++    }
++
++    public void suspend() {
++        IHardware service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.suspend();
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public void reboot() {
++        IHardware service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.reboot();
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public void upgrade(String system_zip, int system_time, String vendor_zip, int vendor_time) {
++        IHardware service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.upgrade(system_zip, system_time, vendor_zip, vendor_time);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++}
+diff --git a/sdk/src/java/lineageos/waydroid/IClipboard.aidl b/sdk/src/java/lineageos/waydroid/IClipboard.aidl
+new file mode 100644
+index 00000000..b370e71a
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/IClipboard.aidl
+@@ -0,0 +1,23 @@
++/*
++**
++** Copyright (C) 2021 The WayDroid Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++
++package lineageos.waydroid;
++
++interface IClipboard {
++    void sendClipboardData(String value);
++    String getClipboardData();
++}
+diff --git a/sdk/src/java/lineageos/waydroid/IHardware.aidl b/sdk/src/java/lineageos/waydroid/IHardware.aidl
+new file mode 100644
+index 00000000..7d1b266b
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/IHardware.aidl
+@@ -0,0 +1,26 @@
++/*
++**
++** Copyright (C) 2021 The WayDroid Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++
++package lineageos.waydroid;
++
++interface IHardware {
++    int enableNFC(boolean enable);
++    int enableBluetooth(boolean enable);
++    void suspend();
++    void reboot();
++    void upgrade(String system_zip, int system_time, String vendor_zip, int vendor_time);
++}
+diff --git a/sdk/src/java/lineageos/waydroid/IPlatform.aidl b/sdk/src/java/lineageos/waydroid/IPlatform.aidl
+new file mode 100644
+index 00000000..c602efa1
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/IPlatform.aidl
+@@ -0,0 +1,38 @@
++/*
++**
++** Copyright (C) 2021 The WayDroid Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++
++package lineageos.waydroid;
++
++import lineageos.waydroid.AppInfo;
++
++interface IPlatform {
++    String getprop(String prop, String default_value);
++    void setprop(String prop, String value);
++
++    List<AppInfo> getAppsInfo();
++    AppInfo getAppInfo(String packageName);
++    int installApp(String path);
++    int removeApp(String packageName);
++    void launchApp(String packageName);
++    String getAppName(String packageName);
++
++    void settingsPutString(int mode, String key, String value);
++    String settingsGetString(int mode, String key);
++    void settingsPutInt(int mode, String key, int value);
++    int settingsGetInt(int mode, String key);
++    String launchIntent(String action, String uri);
++}
+diff --git a/sdk/src/java/lineageos/waydroid/IUserMonitor.aidl b/sdk/src/java/lineageos/waydroid/IUserMonitor.aidl
+new file mode 100644
+index 00000000..61afab44
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/IUserMonitor.aidl
+@@ -0,0 +1,23 @@
++/*
++**
++** Copyright (C) 2021 The WayDroid Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++
++package lineageos.waydroid;
++
++interface IUserMonitor {
++    void userUnlocked(int uid);
++    void packageStateChanged(int mode, String packageName, int uid);
++}
+diff --git a/sdk/src/java/lineageos/waydroid/Platform.java b/sdk/src/java/lineageos/waydroid/Platform.java
+new file mode 100644
+index 00000000..59b85adb
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/Platform.java
+@@ -0,0 +1,235 @@
++/**
++ * Copyright (C) 2021 The WayDroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package lineageos.waydroid;
++
++import android.content.Context;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.util.Log;
++
++import lineageos.app.LineageContextConstants;
++
++import java.util.List;
++import java.util.ArrayList;
++
++public class Platform {
++    private static final String TAG = "WayDroidPlatform";
++
++    /**
++     * Unable to determine status, an error occured
++     */
++    public static final int ERROR_UNDEFINED = -1;
++
++    /**
++     * Settings providers
++     */
++    public static final int SETTINGS_SECURE = 0;
++    public static final int SETTINGS_SYSTEM = 1;
++    public static final int SETTINGS_GLOBAL = 2;
++
++    private static IPlatform sService;
++    private static Platform sInstance;
++
++    private Context mContext;
++
++    private Platform(Context context) {
++        Context appContext = context.getApplicationContext();
++        mContext = appContext == null ? context : appContext;
++        sService = getService();
++        if (sService == null) {
++            throw new RuntimeException("Unable to get WayDroidService. The service" +
++                    " either crashed, was not started, or the interface has been called to early" +
++                    " in SystemServer init");
++                }
++    }
++
++    /**
++     * Get or create an instance of the {@link lineageos.waydroid.Platform}
++     *
++     * @param context Used to get the service
++     * @return {@link Platform}
++     */
++    public static Platform getInstance(Context context) {
++        if (sInstance == null) {
++            sInstance = new Platform(context);
++        }
++        return sInstance;
++    }
++
++    /** @hide **/
++    public static IPlatform getService() {
++        if (sService != null) {
++            return sService;
++        }
++        IBinder b = ServiceManager.getService(LineageContextConstants.WAYDROID_PLATFORM_SERVICE);
++
++        if (b == null) {
++            Log.e(TAG, "null service. SAD!");
++            return null;
++        }
++
++        sService = IPlatform.Stub.asInterface(b);
++        return sService;
++    }
++
++    /** @hide **/
++    public String getprop(String prop, String default_value) {
++        if (sService == null) {
++            return default_value;
++        }
++        try {
++            return sService.getprop(prop, default_value);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return default_value;
++    }
++
++    public void setprop(String prop, String value) {
++        if (sService == null) {
++            return;
++        }
++        try {
++            sService.setprop(prop, value);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public List<AppInfo> getAppsInfo() {
++        List<AppInfo> result = new ArrayList<>();
++        if (sService == null) {
++            return result;
++        }
++        try {
++            result = sService.getAppsInfo();
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return result;
++    }
++
++    public AppInfo getAppInfo(String packageName) {
++        if (sService == null) {
++            return null;
++        }
++        try {
++            return sService.getAppInfo(packageName);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return null;
++    }
++
++    public int installApp(String path) {
++        if (sService == null) {
++            return ERROR_UNDEFINED;
++        }
++        try {
++            return sService.installApp(path);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return ERROR_UNDEFINED;
++    }
++
++    public int removeApp(String packageName) {
++        if (sService == null) {
++            return ERROR_UNDEFINED;
++        }
++        try {
++            return sService.removeApp(packageName);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return ERROR_UNDEFINED;
++    }
++
++    public void launchApp(String packageName) {
++        if (sService == null) {
++            return;
++        }
++        try {
++            sService.launchApp(packageName);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public String getAppName(String packageName) {
++        if (sService == null) {
++            return "";
++        }
++        try {
++            return sService.getAppName(packageName);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return "";
++    }
++
++    public void settingsPutString(int mode, String key, String value) {
++        if (sService == null) {
++            return;
++        }
++        try {
++            sService.settingsPutString(mode, key, value);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public String settingsGetString(int mode, String key) {
++        if (sService == null) {
++            return "";
++        }
++        try {
++            return sService.settingsGetString(mode, key);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return "";
++    }
++
++    public void settingsPutInt(int mode, String key, int value) {
++        if (sService == null) {
++            return;
++        }
++        try {
++            sService.settingsPutInt(mode, key, value);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public int settingsGetInt(int mode, String key) {
++        if (sService == null) {
++            return ERROR_UNDEFINED;
++        }
++        try {
++            return sService.settingsGetInt(mode, key);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return ERROR_UNDEFINED;
++    }
++}
+diff --git a/sdk/src/java/lineageos/waydroid/UserMonitor.java b/sdk/src/java/lineageos/waydroid/UserMonitor.java
+new file mode 100644
+index 00000000..e89da404
+--- /dev/null
++++ b/sdk/src/java/lineageos/waydroid/UserMonitor.java
+@@ -0,0 +1,100 @@
++/**
++ * Copyright (C) 2021 The WayDroid Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package lineageos.waydroid;
++
++import android.content.Context;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.util.Log;
++
++import lineageos.app.LineageContextConstants;
++
++public class UserMonitor {
++    private static final String TAG = "WayDroidUserMonitor";
++
++    public static final int WAYDROID_PACKAGE_ADDED = 0;
++    public static final int WAYDROID_PACKAGE_REMOVED = 1;
++    public static final int WAYDROID_PACKAGE_UPDATED = 2;
++
++    private static IUserMonitor sService;
++    private static UserMonitor sInstance;
++
++    private Context mContext;
++
++    private UserMonitor(Context context) {
++        Context appContext = context.getApplicationContext();
++        mContext = appContext == null ? context : appContext;
++        sService = getService();
++    }
++
++    /**
++     * Get or create an instance of the {@link lineageos.waydroid.UserMonitor}
++     *
++     * @param context Used to get the service
++     * @return {@link UserMonitor}
++     */
++    public static UserMonitor getInstance(Context context) {
++        if (sInstance == null) {
++            sInstance = new UserMonitor(context);
++        }
++        return sInstance;
++    }
++
++    /** @hide **/
++    public static IUserMonitor getService() {
++        if (sService != null) {
++            return sService;
++        }
++        IBinder b = ServiceManager.getService(LineageContextConstants.WAYDROID_USERMONITOR_SERVICE);
++
++        if (b == null) {
++            Log.e(TAG, "null service. SAD!");
++            return null;
++        }
++
++        sService = IUserMonitor.Stub.asInterface(b);
++        return sService;
++    }
++
++    /** @hide **/
++    public void userUnlocked(int uid) {
++        IUserMonitor service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.userUnlocked(uid);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++
++    public void packageStateChanged(int mode, String packageName, int uid) {
++        IUserMonitor service = getService();
++        if (service == null) {
++            return;
++        }
++        try {
++            service.packageStateChanged(mode, packageName, uid);
++        } catch (RemoteException e) {
++            Log.e(TAG, e.getLocalizedMessage(), e);
++        }
++        return;
++    }
++}
+-- 
+2.41.0
+

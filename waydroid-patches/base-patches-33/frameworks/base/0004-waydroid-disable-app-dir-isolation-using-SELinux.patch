@@ -1,0 +1,46 @@
+From 2d08e9ef7a8e6a818d10da459916dc56261f7197 Mon Sep 17 00:00:00 2001
+From: Madhushan Nishantha <jlmadushan@gmail.com>
+Date: Wed, 20 Oct 2021 19:46:11 +0200
+Subject: [PATCH 04/29] (waydroid) disable app dir isolation using SELinux
+
+Change-Id: Ifc0495a4795ab64f646abd4987819fa367b304f4
+---
+ core/jni/Android.bp                         | 1 +
+ core/jni/com_android_internal_os_Zygote.cpp | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/core/jni/Android.bp b/core/jni/Android.bp
+index aa661713b1fe..224d628112f3 100644
+--- a/core/jni/Android.bp
++++ b/core/jni/Android.bp
+@@ -34,6 +34,7 @@ cc_library_shared {
+         "-Wno-error=deprecated-declarations",
+         "-Wunused",
+         "-Wunreachable-code",
++        "-Wno-unused-function"
+     ],
+ 
+     cppflags: ["-Wno-conversion-null"],
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index 000de4ac6963..3d02591d57d3 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -1764,6 +1764,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     // Isolate app data, jit profile and sandbox data directories by overlaying a tmpfs on those
+     // dirs and bind mount all related packages separately.
+     if (mount_data_dirs) {
++        /* Disabled in Waydroid
+         // Sdk sandbox data isolation does not need to occur for app processes since sepolicy
+         // prevents access to sandbox data anyway.
+         if (is_sdk_sandbox_uid(uid)) {
+@@ -1772,6 +1773,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+         }
+         isolateAppData(env, pkg_data_info_list, allowlisted_data_info_list, uid, process_name,
+                        managed_nice_name, fail_fn);
++        */
+         isolateJitProfile(env, pkg_data_info_list, uid, process_name, managed_nice_name, fail_fn);
+     }
+     // MOUNT_EXTERNAL_INSTALLER, MOUNT_EXTERNAL_PASS_THROUGH, MOUNT_EXTERNAL_ANDROID_WRITABLE apps
+-- 
+2.48.1
+

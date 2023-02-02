@@ -1,0 +1,28 @@
+From a3221eccb6b9a57a6855c616e2a89a36051f86ca Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sat, 25 Jan 2025 19:33:45 +0100
+Subject: [PATCH 28/29] Enable client side shadows by default
+
+This seems to give us a very light shadow -- better than nothing.
+
+Change-Id: Ia3152429cbfefc85ae6909fcac5da3eb003539ef
+---
+ core/java/com/android/internal/policy/PhoneWindow.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/com/android/internal/policy/PhoneWindow.java b/core/java/com/android/internal/policy/PhoneWindow.java
+index e603e2ed57f1..8111bee0e022 100644
+--- a/core/java/com/android/internal/policy/PhoneWindow.java
++++ b/core/java/com/android/internal/policy/PhoneWindow.java
+@@ -359,7 +359,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
+         super(context);
+         mLayoutInflater = LayoutInflater.from(context);
+         mRenderShadowsInCompositor = Settings.Global.getInt(context.getContentResolver(),
+-                DEVELOPMENT_RENDER_SHADOWS_IN_COMPOSITOR, 1) != 0;
++                DEVELOPMENT_RENDER_SHADOWS_IN_COMPOSITOR, 0) != 0;
+         mProxyOnBackInvokedDispatcher = new ProxyOnBackInvokedDispatcher(
+                 context.getApplicationInfo().isOnBackInvokedCallbackEnabled());
+     }
+-- 
+2.48.1
+

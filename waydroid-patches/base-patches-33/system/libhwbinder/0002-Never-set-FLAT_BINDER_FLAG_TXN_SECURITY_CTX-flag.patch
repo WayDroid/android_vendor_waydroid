@@ -1,0 +1,50 @@
+From 465a65c5efc56843331923aa0b0b808544887331 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 4 Apr 2021 00:52:56 +0300
+Subject: [PATCH 2/2] Never set FLAT_BINDER_FLAG_TXN_SECURITY_CTX flag
+
+It breaks binder transactions when run on a kernel without
+SELinux support.
+
+Apply same change to libhwbinder as to libbinder
+inside frameworks/native.
+
+* Taken from halium: https://github.com/Halium/hybris-patches/commit/f7c47230f3348c6fd0a2392a21e709e2f51019f5
+
+Change-Id: I9c474cf48201b7407920605608c8e2a713afbc87
+---
+ Parcel.cpp       | 3 ++-
+ ProcessState.cpp | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Parcel.cpp b/Parcel.cpp
+index 14a444d..7db852e 100644
+--- a/Parcel.cpp
++++ b/Parcel.cpp
+@@ -206,7 +206,8 @@ status_t flatten_binder(const sp<ProcessState>& /*proc*/,
+             obj.flags |= FLAT_BINDER_FLAG_ACCEPTS_FDS | FLAT_BINDER_FLAG_INHERIT_RT;
+             obj.flags |= (policy & 3) << FLAT_BINDER_FLAG_SCHED_POLICY_SHIFT;
+             if (local->isRequestingSid()) {
+-                obj.flags |= FLAT_BINDER_FLAG_TXN_SECURITY_CTX;
++                // Disabled for Waydroid
++                /*obj.flags |= FLAT_BINDER_FLAG_TXN_SECURITY_CTX;*/
+             }
+             obj.hdr.type = BINDER_TYPE_BINDER;
+             obj.binder = reinterpret_cast<uintptr_t>(local->getWeakRefs());
+diff --git a/ProcessState.cpp b/ProcessState.cpp
+index dee652c..0189ab7 100644
+--- a/ProcessState.cpp
++++ b/ProcessState.cpp
+@@ -150,7 +150,8 @@ void ProcessState::becomeContextManager()
+     AutoMutex _l(mLock);
+ 
+     flat_binder_object obj {
+-        .flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,
++        // Disabled for Waydroid
++        /*.flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,*/
+     };
+ 
+     status_t result = ioctl(mDriverFD, BINDER_SET_CONTEXT_MGR_EXT, &obj);
+-- 
+2.39.1
+

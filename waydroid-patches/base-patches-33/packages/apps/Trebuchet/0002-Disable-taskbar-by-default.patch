@@ -1,0 +1,30 @@
+From 5a5d33e0016b4899e0acf4185646da70f9654ce3 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sat, 25 Jan 2025 17:55:14 +0100
+Subject: [PATCH 2/2] Disable taskbar by default
+
+* it doesn't work in PC mode
+* we don't want it showing in single-window mode, as the host desktop
+  will already have a taskbar
+
+Change-Id: I60de9778631826117211d66e9b753d33dfb32ac4
+---
+ src/com/android/launcher3/DeviceProfile.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/launcher3/DeviceProfile.java b/src/com/android/launcher3/DeviceProfile.java
+index 9e8aef7c54..12acd978df 100644
+--- a/src/com/android/launcher3/DeviceProfile.java
++++ b/src/com/android/launcher3/DeviceProfile.java
+@@ -300,7 +300,7 @@ public class DeviceProfile {
+         isPhone = !isTablet;
+         isTwoPanels = isTablet && isMultiDisplay;
+         boolean isTaskBarEnabled = LineageSettings.System.getInt(context.getContentResolver(),
+-                LineageSettings.System.ENABLE_TASKBAR, isTablet ? 1 : 0) == 1;
++                LineageSettings.System.ENABLE_TASKBAR, 0) == 1;
+         isTaskbarPresent = isTaskBarEnabled && ApiWrapper.TASKBAR_DRAWN_IN_PROCESS;
+ 
+         // Some more constants.
+-- 
+2.48.1
+

@@ -1,0 +1,52 @@
+From 554ffbdcb21effd317393b6c1ceb1fbe822b1b30 Mon Sep 17 00:00:00 2001
+From: Ziyang Zhou <ziyang.zhou@outlook.com>
+Date: Sat, 31 Jul 2021 06:14:33 +0000
+Subject: [PATCH 1/3] ignore iptables error
+
+Change-Id: I3437fe41408bfa567bd3aa280fde61e91c4e066e
+---
+ server/BandwidthController.cpp       | 2 +-
+ server/Controllers.cpp               | 1 -
+ server/IptablesRestoreController.cpp | 1 +
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/server/BandwidthController.cpp b/server/BandwidthController.cpp
+index 8dba75a5..bb3579d6 100644
+--- a/server/BandwidthController.cpp
++++ b/server/BandwidthController.cpp
+@@ -542,7 +542,7 @@ int BandwidthController::updateQuota(const std::string& quotaName, int64_t bytes
+     if (!isOk(file)) {
+         int res = errno;
+         ALOGE("Updating quota %s failed (%s)", quotaName.c_str(), toString(file).c_str());
+-        return -res;
++        return res = 0; // HACKED
+     }
+     // TODO: should we propagate this error?
+     sys.fprintf(file.value().get(), "%" PRId64 "\n", bytes).ignoreError();
+diff --git a/server/Controllers.cpp b/server/Controllers.cpp
+index 00ee186d..c07f1b81 100644
+--- a/server/Controllers.cpp
++++ b/server/Controllers.cpp
+@@ -284,7 +284,6 @@ void Controllers::init() {
+         // As such simply exit netd.  This may crash loop the system, but by failing
+         // to bootup we will trigger rollback and thus this offers us protection against
+         // a mainline update breaking things.
+-        exit(1);
+     }
+     gLog.info("Enabling bandwidth control: %" PRId64 "us", s.getTimeAndResetUs());
+ 
+diff --git a/server/IptablesRestoreController.cpp b/server/IptablesRestoreController.cpp
+index f7ba2008..2cc5899f 100644
+--- a/server/IptablesRestoreController.cpp
++++ b/server/IptablesRestoreController.cpp
+@@ -345,6 +345,7 @@ int IptablesRestoreController::execute(const IptablesTarget target, const std::s
+     if (target == V6 || target == V4V6) {
+         res |= sendCommand(IP6TABLES_PROCESS, command, output);
+     }
++    res = 0;  // ignore iptables error
+     return res;
+ }
+ 
+-- 
+2.39.1
+

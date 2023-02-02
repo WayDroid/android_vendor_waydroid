@@ -1,0 +1,24 @@
+From 74ca128625bb9d868fca12d604f03302b3bd1576 Mon Sep 17 00:00:00 2001
+From: Ziyang Zhou <ziyang.zhou@outlook.com>
+Date: Sun, 14 Aug 2022 11:53:19 +0800
+Subject: [PATCH 2/3] ignore bpf error
+
+---
+ server/main.cpp | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/server/main.cpp b/server/main.cpp
+index 0e81d4e5..ed4dc493 100644
+--- a/server/main.cpp
++++ b/server/main.cpp
+@@ -134,7 +134,6 @@ int main() {
+ 
+     if (libnetd_updatable_init(cg2_path.c_str())) {
+         ALOGE("libnetd_updatable_init failed");
+-        exit(1);
+     }
+     gLog.info("libnetd_updatable_init success");
+ 
+-- 
+2.39.1
+

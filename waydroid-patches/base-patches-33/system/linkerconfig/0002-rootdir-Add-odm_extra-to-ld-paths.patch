@@ -1,0 +1,153 @@
+From 2787657327cbfaf488076367124f7221a4b758d3 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Wed, 6 Oct 2021 14:53:52 +0800
+Subject: [PATCH 2/3] rootdir: Add odm_extra to ld paths
+
+Change-Id: I5bc70bb151250a646fd3c327f40c1788bf130fdb
+---
+ contents/configuration/baseconfig.cc      | 1 +
+ contents/configuration/legacy.cc          | 1 +
+ contents/namespace/rs.cc                  | 3 +++
+ contents/namespace/sphal.cc               | 2 ++
+ contents/namespace/systemdefault.cc       | 1 +
+ contents/namespace/unrestricteddefault.cc | 1 +
+ contents/namespace/vendordefault.cc       | 2 ++
+ contents/namespace/vndk.cc                | 4 +++-
+ 8 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/contents/configuration/baseconfig.cc b/contents/configuration/baseconfig.cc
+index 8c75b12..6018ad9 100644
+--- a/contents/configuration/baseconfig.cc
++++ b/contents/configuration/baseconfig.cc
+@@ -62,6 +62,7 @@ android::linkerconfig::modules::Configuration CreateBaseConfiguration(
+       {Var("PRODUCT") + "/bin/", "product"},
+ 
+       {"/odm/bin/", "vendor"},
++      {"/odm_extra/bin/", "vendor"},
+       {"/vendor/bin/", "vendor"},
+       {"/vendor_extra/bin/", "vendor"},
+       {"/data/nativetest/odm", "vendor"},
+diff --git a/contents/configuration/legacy.cc b/contents/configuration/legacy.cc
+index 379a72a..debb963 100644
+--- a/contents/configuration/legacy.cc
++++ b/contents/configuration/legacy.cc
+@@ -40,6 +40,7 @@ android::linkerconfig::modules::Configuration CreateLegacyConfiguration(
+       {"/vendor", "legacy"},
+       {"/vendor_extra", "legacy"},
+       {"/odm", "legacy"},
++      {"/odm_extra", "legacy"},
+       {"/sbin", "legacy"},
+       // Except for /postinstall, where only /system and /product are searched
+       {"/postinstall", "postinstall"},
+diff --git a/contents/namespace/rs.cc b/contents/namespace/rs.cc
+index 4e89f79..bace013 100644
+--- a/contents/namespace/rs.cc
++++ b/contents/namespace/rs.cc
+@@ -31,15 +31,18 @@ Namespace BuildRsNamespace([[maybe_unused]] const Context& ctx) {
+       "rs", /*is_isolated=*/!ctx.IsUnrestrictedSection(), /*is_visible=*/true);
+ 
+   ns.AddSearchPath("/odm/${LIB}/vndk-sp");
++  ns.AddSearchPath("/odm_extra/${LIB}/vndk-sp");
+   ns.AddSearchPath("/vendor/${LIB}/vndk-sp");
+   ns.AddSearchPath("/vendor_extra/${LIB}/vndk-sp");
+   ns.AddSearchPath("/apex/com.android.vndk.v" + Var("VENDOR_VNDK_VERSION") +
+                    "/${LIB}");
+   ns.AddSearchPath("/odm/${LIB}");
++  ns.AddSearchPath("/odm_extra/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor_extra/${LIB}");
+ 
+   ns.AddPermittedPath("/odm/${LIB}");
++  ns.AddPermittedPath("/odm_extra/${LIB}");
+   ns.AddPermittedPath("/vendor/${LIB}");
+   ns.AddPermittedPath("/vendor_extra/${LIB}");
+   ns.AddPermittedPath("/system/vendor/${LIB}");
+diff --git a/contents/namespace/sphal.cc b/contents/namespace/sphal.cc
+index f2ff216..b933041 100644
+--- a/contents/namespace/sphal.cc
++++ b/contents/namespace/sphal.cc
+@@ -38,6 +38,7 @@ Namespace BuildSphalNamespace([[maybe_unused]] const Context& ctx) {
+                /*is_isolated=*/!ctx.IsUnrestrictedSection(),
+                /*is_visible=*/true);
+   ns.AddSearchPath("/odm/${LIB}");
++  ns.AddSearchPath("/odm_extra/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}/egl");
+   ns.AddSearchPath("/vendor/${LIB}/hw");
+@@ -46,6 +47,7 @@ Namespace BuildSphalNamespace([[maybe_unused]] const Context& ctx) {
+   ns.AddSearchPath("/vendor_extra/${LIB}/hw");
+ 
+   ns.AddPermittedPath("/odm/${LIB}");
++  ns.AddPermittedPath("/odm_extra/${LIB}");
+   ns.AddPermittedPath("/vendor/${LIB}");
+   ns.AddPermittedPath("/vendor_extra/${LIB}");
+   ns.AddPermittedPath("/system/vendor/${LIB}");
+diff --git a/contents/namespace/systemdefault.cc b/contents/namespace/systemdefault.cc
+index e3732f0..273679e 100644
+--- a/contents/namespace/systemdefault.cc
++++ b/contents/namespace/systemdefault.cc
+@@ -105,6 +105,7 @@ Namespace BuildSystemDefaultNamespace([[maybe_unused]] const Context& ctx) {
+     ns.AddSearchPath("/vendor/${LIB}");
+     ns.AddSearchPath("/vendor_extra/${LIB}");
+     ns.AddSearchPath("/odm/${LIB}");
++    ns.AddSearchPath("/odm_extra/${LIB}");
+   }
+ 
+   if (is_fully_treblelized) {
+diff --git a/contents/namespace/unrestricteddefault.cc b/contents/namespace/unrestricteddefault.cc
+index 17805fd..bd63992 100644
+--- a/contents/namespace/unrestricteddefault.cc
++++ b/contents/namespace/unrestricteddefault.cc
+@@ -31,6 +31,7 @@ Namespace BuildUnrestrictedDefaultNamespace([[maybe_unused]] const Context& ctx)
+   ns.AddSearchPath("/system/${LIB}");
+   ns.AddSearchPath(Var("SYSTEM_EXT") + "/${LIB}");
+   ns.AddSearchPath("/odm/${LIB}");
++  ns.AddSearchPath("/odm_extra/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor_extra/${LIB}");
+   ns.AddSearchPath(Var("PRODUCT") + "/${LIB}");
+diff --git a/contents/namespace/vendordefault.cc b/contents/namespace/vendordefault.cc
+index 4de1b08..dfad389 100644
+--- a/contents/namespace/vendordefault.cc
++++ b/contents/namespace/vendordefault.cc
+@@ -36,6 +36,7 @@ Namespace BuildVendorNamespace([[maybe_unused]] const Context& ctx,
+   Namespace ns(name, /*is_isolated=*/true, /*is_visible=*/true);
+ 
+   ns.AddSearchPath("/odm/${LIB}");
++  ns.AddSearchPath("/odm_extra/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}");
+   ns.AddSearchPath("/vendor/${LIB}/hw");
+   ns.AddSearchPath("/vendor/${LIB}/egl");
+@@ -44,6 +45,7 @@ Namespace BuildVendorNamespace([[maybe_unused]] const Context& ctx,
+   ns.AddSearchPath("/vendor_extra/${LIB}/egl");
+ 
+   ns.AddPermittedPath("/odm");
++  ns.AddPermittedPath("/odm_extra");
+   ns.AddPermittedPath("/vendor");
+   ns.AddPermittedPath("/vendor_extra");
+   ns.AddPermittedPath("/system/vendor");
+diff --git a/contents/namespace/vndk.cc b/contents/namespace/vndk.cc
+index 9b99f8f..2e3bb85 100644
+--- a/contents/namespace/vndk.cc
++++ b/contents/namespace/vndk.cc
+@@ -58,7 +58,7 @@ Namespace BuildVndkNamespace([[maybe_unused]] const Context& ctx,
+     vndk_version = Var("PRODUCT_VNDK_VERSION");
+   } else {
+     // default for vendor
+-    lib_paths = {"/odm/${LIB}", "/vendor/${LIB}", "/vendor_extra/${LIB}"};
++    lib_paths = {"/odm/${LIB}", "/odm_extra/${LIB}", "/vendor/${LIB}", "/vendor_extra/${LIB}"};
+     vndk_version = Var("VENDOR_VNDK_VERSION");
+   }
+ 
+@@ -82,6 +82,8 @@ Namespace BuildVndkNamespace([[maybe_unused]] const Context& ctx,
+     // It is for vendor sp-hal
+     ns.AddPermittedPath("/odm/${LIB}/hw");
+     ns.AddPermittedPath("/odm/${LIB}/egl");
++    ns.AddPermittedPath("/odm_extra/${LIB}/hw");
++    ns.AddPermittedPath("/odm_extra/${LIB}/egl");
+     ns.AddPermittedPath("/vendor/${LIB}/hw");
+     ns.AddPermittedPath("/vendor/${LIB}/egl");
+     ns.AddPermittedPath("/vendor_extra/${LIB}/hw");
+-- 
+2.39.1
+

@@ -1,0 +1,92 @@
+From e2eb5d3bed58de2d633e1e82c8d2a6a68b60d0a1 Mon Sep 17 00:00:00 2001
+From: Merissa Mitchell <liyingtan@google.com>
+Date: Thu, 24 Aug 2023 16:26:21 -0700
+Subject: [PATCH 1/2] Fix NPE from NavbarButtonsViewController on FEATURE_PC
+ devices.
+
+When FEATURE_PC is enabled on a device,
+DesktopNavbarButtonsViewController is instantiated. Previously,
+DesktopNavbarButtonsViewController saves an internal copy of
+mControllers and the mControllers field in NavbarButtonsViewController
+is left unset. This was not a problem because mControllers in
+NavbarButtonsViewController was not used in any code that was not
+overridden by DesktopNavbarButtonsViewController.
+
+ag/17944073 added some code that accesses mControllers in
+NavbarButtonsViewController. Even though the code would be skipped for
+FEATURE_PC devices (due to the TaskbarUIController check, which is
+overridden by DesktopTaskbarUIController) in the end, it still caused an
+NPE.
+
+DesktopNavbarButtonsViewController does not require most of the button
+updates done in NavbarButtonsViewController. Regardless, this CL
+provides a workaround to avoid the NPE by setting mControllers in
+NavbarButtonsViewController in FEATURE_PC devices.
+
+Bug: 296623609
+Bug: 297260211
+Test: Manual; build and launch sdk_gpc emulator. Ensure that no crash
+occurs
+
+Change-Id: Ica22359b96fd0a277c575a238abb194d762e81ea
+---
+ .../taskbar/DesktopNavbarButtonsViewController.java      | 9 +++++++++
+ .../launcher3/taskbar/NavbarButtonsViewController.java   | 6 +++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/quickstep/src/com/android/launcher3/taskbar/DesktopNavbarButtonsViewController.java b/quickstep/src/com/android/launcher3/taskbar/DesktopNavbarButtonsViewController.java
+index 268024fd3d..93fb3df73c 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/DesktopNavbarButtonsViewController.java
++++ b/quickstep/src/com/android/launcher3/taskbar/DesktopNavbarButtonsViewController.java
+@@ -18,6 +18,7 @@ package com.android.launcher3.taskbar;
+ import static com.android.launcher3.taskbar.TaskbarNavButtonController.BUTTON_NOTIFICATIONS;
+ import static com.android.launcher3.taskbar.TaskbarNavButtonController.BUTTON_QUICK_SETTINGS;
+ 
++import android.content.pm.ActivityInfo.Config;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+@@ -58,6 +59,11 @@ public class DesktopNavbarButtonsViewController extends NavbarButtonsViewControl
+     @Override
+     public void init(TaskbarControllers controllers) {
+         mControllers = controllers;
++        super.init(controllers);
++    }
++
++    @Override
++    protected void setupController() {
+         mNavButtonsView.getLayoutParams().height = mContext.getDeviceProfile().taskbarHeight;
+ 
+         // Quick settings and notifications buttons
+@@ -74,4 +80,7 @@ public class DesktopNavbarButtonsViewController extends NavbarButtonsViewControl
+     /** Cleans up on destroy */
+     @Override
+     public void onDestroy() { }
++
++    @Override
++    public void onConfigurationChanged(@Config int configChanges) { }
+ }
+diff --git a/quickstep/src/com/android/launcher3/taskbar/NavbarButtonsViewController.java b/quickstep/src/com/android/launcher3/taskbar/NavbarButtonsViewController.java
+index a713ff53a7..1c1065c7bc 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/NavbarButtonsViewController.java
++++ b/quickstep/src/com/android/launcher3/taskbar/NavbarButtonsViewController.java
+@@ -215,11 +215,15 @@ public class NavbarButtonsViewController implements TaskbarControllers.LoggableT
+      */
+     public void init(TaskbarControllers controllers) {
+         mControllers = controllers;
++        setupController();
++    }
++
++    protected void setupController() {
+         boolean isThreeButtonNav = mContext.isThreeButtonNav();
+         DeviceProfile deviceProfile = mContext.getDeviceProfile();
+         Resources resources = mContext.getResources();
+         Point p = !mContext.isUserSetupComplete()
+-                ? new Point(0, controllers.taskbarActivityContext.getSetupWindowHeight())
++                ? new Point(0, mControllers.taskbarActivityContext.getSetupWindowHeight())
+                 : DimensionUtils.getTaskbarPhoneDimensions(deviceProfile, resources,
+                         TaskbarManager.isPhoneMode(deviceProfile));
+         mNavButtonsView.getLayoutParams().height = p.y;
+-- 
+2.48.1
+

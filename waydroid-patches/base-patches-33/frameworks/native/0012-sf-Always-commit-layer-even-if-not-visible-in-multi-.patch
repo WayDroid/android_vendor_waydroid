@@ -1,0 +1,67 @@
+From abf8dbed2c5495f025718c505fa43f1214b725d1 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Mon, 27 Jan 2025 00:22:14 +0100
+Subject: [PATCH 12/12] sf: Always commit layer even if not visible in
+ multi-windows mode
+
+Change-Id: I4f3a8930181db093db82c84e72bb5bcbbe41f577
+---
+ .../include/compositionengine/impl/Output.h                  | 5 +++++
+ services/surfaceflinger/CompositionEngine/src/Output.cpp     | 4 ++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h b/services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h
+index 428c19fe02..cc1285dbb4 100644
+--- a/services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h
++++ b/services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h
+@@ -16,6 +16,8 @@
+ 
+ #pragma once
+ 
++#include <android-base/properties.h>
++
+ #include <compositionengine/CompositionEngine.h>
+ #include <compositionengine/LayerFECompositionState.h>
+ #include <compositionengine/Output.h>
+@@ -31,6 +33,7 @@
+ #include <memory>
+ #include <utility>
+ #include <vector>
++#include <string>
+ 
+ namespace android::compositionengine::impl {
+ 
+@@ -175,6 +178,8 @@ private:
+ 
+     // Whether the content must be recomposed this frame.
+     bool mMustRecompose = false;
++
++    bool mWaydroidMultiWindows = base::GetBoolProperty(std::string("persist.waydroid.multi_windows"), false);
+ };
+ 
+ // This template factory function standardizes the implementation details of the
+diff --git a/services/surfaceflinger/CompositionEngine/src/Output.cpp b/services/surfaceflinger/CompositionEngine/src/Output.cpp
+index 1598fd135a..babf4c6d32 100644
+--- a/services/surfaceflinger/CompositionEngine/src/Output.cpp
++++ b/services/surfaceflinger/CompositionEngine/src/Output.cpp
+@@ -637,7 +637,7 @@ void Output::ensureOutputLayerIfVisible(sp<compositionengine::LayerFE>& layerFE,
+     // subtract the opaque region covered by the layers above us
+     visibleRegion.subtractSelf(coverage.aboveOpaqueLayers);
+ 
+-    if (visibleRegion.isEmpty()) {
++    if (visibleRegion.isEmpty() && !mWaydroidMultiWindows) {
+         return;
+     }
+ 
+@@ -696,7 +696,7 @@ void Output::ensureOutputLayerIfVisible(sp<compositionengine::LayerFE>& layerFE,
+     const auto& outputState = getState();
+     Region drawRegion(outputState.transform.transform(visibleNonTransparentRegion));
+     drawRegion.andSelf(outputState.displaySpace.getBoundsAsRect());
+-    if (drawRegion.isEmpty()) {
++    if (drawRegion.isEmpty() && !mWaydroidMultiWindows) {
+         return;
+     }
+ 
+-- 
+2.48.1
+

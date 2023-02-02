@@ -1,0 +1,72 @@
+From 5647ed691954fb3df2a29200ae78262afff460fc Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Thu, 20 May 2021 22:41:15 +0430
+Subject: [PATCH 06/27] codec2: Fix media on older vendors
+
+---
+ media/codec2/hidl/client/client.cpp | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
+
+diff --git a/media/codec2/hidl/client/client.cpp b/media/codec2/hidl/client/client.cpp
+index 0acf7d726c..a5b5d0ad89 100644
+--- a/media/codec2/hidl/client/client.cpp
++++ b/media/codec2/hidl/client/client.cpp
+@@ -30,7 +30,7 @@
+ #include <android/hardware/media/c2/1.0/IComponentListener.h>
+ #include <android/hardware/media/c2/1.0/IComponentStore.h>
+ #include <android/hardware/media/c2/1.0/IConfigurable.h>
+-#include <android/hidl/manager/1.2/IServiceManager.h>
++#include <android/hidl/manager/1.1/IServiceManager.h>
+ 
+ #include <android-base/properties.h>
+ #include <bufferpool/ClientManager.h>
+@@ -44,6 +44,7 @@
+ #include <gui/bufferqueue/2.0/H2BGraphicBufferProducer.h>
+ #include <hardware/gralloc.h> // for GRALLOC_USAGE_*
+ #include <hidl/HidlSupport.h>
++#include <hidl/ServiceManagement.h>
+ #include <system/window.h> // for NATIVE_WINDOW_QUERY_*
+ #include <media/stagefright/foundation/ADebug.h> // for asString(status_t)
+ 
+@@ -899,10 +900,10 @@ std::shared_ptr<C2ParamReflector>
+ std::vector<std::string> const& Codec2Client::GetServiceNames() {
+     static std::vector<std::string> sServiceNames{[]() {
+         using ::android::hardware::media::c2::V1_0::IComponentStore;
+-        using ::android::hidl::manager::V1_2::IServiceManager;
+ 
+         while (true) {
+-            sp<IServiceManager> serviceManager = IServiceManager::getService();
++            auto serviceManager = hardware::defaultServiceManager1_1();
++            auto serviceManager_host = hardware::defaultServiceManager1_1(true);
+             CHECK(serviceManager) << "Hardware service manager is not running.";
+ 
+             // There are three categories of services based on names.
+@@ -910,7 +911,24 @@ std::vector<std::string> const& Codec2Client::GetServiceNames() {
+             std::vector<std::string> vendorNames;  // Prefixed with "vendor"
+             std::vector<std::string> otherNames;   // Others
+             Return<void> transResult;
+-            transResult = serviceManager->listManifestByInterface(
++            if (serviceManager_host != NULL) {
++                transResult = serviceManager_host->listByInterface(
++                    IComponentStore::descriptor,
++                    [&defaultNames, &vendorNames, &otherNames](
++                            hidl_vec<hidl_string> const& instanceNames) {
++                        for (hidl_string const& instanceName : instanceNames) {
++                            char const* name = instanceName.c_str();
++                            if (strncmp(name, "default", 7) == 0) {
++                                defaultNames.emplace_back(name);
++                            } else if (strncmp(name, "vendor", 6) == 0) {
++                                vendorNames.emplace_back(name);
++                            } else {
++                                otherNames.emplace_back(name);
++                            }
++                        }
++                    });
++            }
++            transResult = serviceManager->listByInterface(
+                     IComponentStore::descriptor,
+                     [&defaultNames, &vendorNames, &otherNames](
+                             hidl_vec<hidl_string> const& instanceNames) {
+-- 
+2.40.0
+

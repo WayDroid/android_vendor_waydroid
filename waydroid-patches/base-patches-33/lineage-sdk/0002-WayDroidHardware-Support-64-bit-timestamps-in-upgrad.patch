@@ -1,0 +1,63 @@
+From 29d59c5775433a8ac5e1892e74791ed308d3c3e2 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Wed, 6 Sep 2023 23:03:39 +0200
+Subject: [PATCH] WayDroidHardware: Support 64-bit timestamps in upgrade
+
+32-bit timestamps will overflow in 2038
+
+Change-Id: Ice1924ffc4fbf28b6d2966f1c083d77c1b91d143
+---
+ sdk/src/java/lineageos/waydroid/Hardware.java | 21 +++++++++++++++----
+ .../java/lineageos/waydroid/IHardware.aidl    |  1 +
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/sdk/src/java/lineageos/waydroid/Hardware.java b/sdk/src/java/lineageos/waydroid/Hardware.java
+index 0d25459a..3dfda498 100644
+--- a/sdk/src/java/lineageos/waydroid/Hardware.java
++++ b/sdk/src/java/lineageos/waydroid/Hardware.java
+@@ -125,15 +125,28 @@ public class Hardware {
+         return;
+     }
+ 
+-    public void upgrade(String system_zip, int system_time, String vendor_zip, int vendor_time) {
++    public void upgrade(String system_zip, long system_time, String vendor_zip, long vendor_time) {
+         IHardware service = getService();
+         if (service == null) {
+             return;
+         }
+         try {
+-            service.upgrade(system_zip, system_time, vendor_zip, vendor_time);
+-        } catch (RemoteException e) {
+-            Log.e(TAG, e.getLocalizedMessage(), e);
++            service.upgrade2(system_zip, system_time, vendor_zip, vendor_time);
++            // HACK: if we were not killed yet, the call was not implemented on the host side.
++            // Fallback to the previous version
++            Log.d(TAG, "IHardware.upgrade2 not implemented (detected through timeout), falling back to IHardware.upgrade");
++            try {
++                service.upgrade(system_zip, (int)system_time, vendor_zip, (int)vendor_time);
++            } catch (RemoteException e) {
++                Log.e(TAG, e.getLocalizedMessage(), e);
++            }
++        } catch (RemoteException | RuntimeException ignored) {
++            Log.d(TAG, "IHardware.upgrade2 not implemented, falling back to IHardware.upgrade");
++            try {
++                service.upgrade(system_zip, (int)system_time, vendor_zip, (int)vendor_time);
++            } catch (RemoteException e) {
++                Log.e(TAG, e.getLocalizedMessage(), e);
++            }
+         }
+         return;
+     }
+diff --git a/sdk/src/java/lineageos/waydroid/IHardware.aidl b/sdk/src/java/lineageos/waydroid/IHardware.aidl
+index 7d1b266b..ec7c8e11 100644
+--- a/sdk/src/java/lineageos/waydroid/IHardware.aidl
++++ b/sdk/src/java/lineageos/waydroid/IHardware.aidl
+@@ -23,4 +23,5 @@ interface IHardware {
+     void suspend();
+     void reboot();
+     void upgrade(String system_zip, int system_time, String vendor_zip, int vendor_time);
++    void upgrade2(String system_zip, long system_time, String vendor_zip, long vendor_time);
+ }
+-- 
+2.41.0
+

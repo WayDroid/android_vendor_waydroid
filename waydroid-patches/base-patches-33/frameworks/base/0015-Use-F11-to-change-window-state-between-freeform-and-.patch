@@ -1,0 +1,47 @@
+From b1d2a6b354ba8b7e06be772fbc51d2509625e278 Mon Sep 17 00:00:00 2001
+From: utzcoz <utzcoz@outlook.com>
+Date: Sun, 5 Apr 2020 22:24:00 +0800
+Subject: [PATCH 15/29] Use F11 to change window state between freeform and
+ fullscreen
+
+Maybe we should add some rules to avoid to some windows to enter
+fullscreen mode and some windows to enter freeform window.
+
+Signed-off-by: utzcoz <utzcoz@outlook.com>
+Change-Id: Id6709e0755a03081d4f77550317596b67137df7e
+
+Conflicts:
+	core/java/com/android/internal/policy/DecorView.java
+---
+ .../com/android/internal/policy/DecorView.java    | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/core/java/com/android/internal/policy/DecorView.java b/core/java/com/android/internal/policy/DecorView.java
+index fe7659ee4332..42a473c7ba68 100644
+--- a/core/java/com/android/internal/policy/DecorView.java
++++ b/core/java/com/android/internal/policy/DecorView.java
+@@ -398,6 +398,21 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
+         }
+ 
+         if (!mWindow.isDestroyed()) {
++            // region @waydroid
++            if (keyCode == KeyEvent.KEYCODE_F11 && isDown) {
++                Window.WindowControllerCallback callback = mWindow.getWindowControllerCallback();
++                final int windowingMode =
++                        getResources().getConfiguration().windowConfiguration.getWindowingMode();
++                if (windowingMode == WINDOWING_MODE_FREEFORM && callback != null) {
++                    callback.toggleFreeformWindowingMode();
++                    updateDecorCaptionShade();
++                } else if (windowingMode != WINDOWING_MODE_FREEFORM && callback != null) {
++                    callback.toggleFreeformWindowingMode();
++                    updateDecorCaptionShade();
++                }
++                return true;
++            }
++            // endregion
+             final Window.Callback cb = mWindow.getCallback();
+             final boolean handled = cb != null && mFeatureId < 0 ? cb.dispatchKeyEvent(event)
+                     : super.dispatchKeyEvent(event);
+-- 
+2.48.1
+

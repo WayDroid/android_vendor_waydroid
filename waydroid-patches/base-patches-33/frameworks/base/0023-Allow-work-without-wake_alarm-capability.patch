@@ -1,0 +1,45 @@
+From b25f1d910ae1e6b41bbce8d31acf4adc5098abfd Mon Sep 17 00:00:00 2001
+From: Vladimir Zolotopupov <zvova7890@gmail.com>
+Date: Sun, 5 Feb 2023 17:34:51 +0200
+Subject: [PATCH 23/29] Allow work without wake_alarm capability
+
+Change-Id: Iac8fb5f98f7c7b4d833d459c87e309ccb0019211
+---
+ ...droid_server_alarm_AlarmManagerService.cpp | 21 ++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/apex/jobscheduler/service/jni/com_android_server_alarm_AlarmManagerService.cpp b/apex/jobscheduler/service/jni/com_android_server_alarm_AlarmManagerService.cpp
+index 8f9e187a7a93..5a6b06bcaa23 100644
+--- a/apex/jobscheduler/service/jni/com_android_server_alarm_AlarmManagerService.cpp
++++ b/apex/jobscheduler/service/jni/com_android_server_alarm_AlarmManagerService.cpp
+@@ -276,7 +276,26 @@ static jlong android_server_alarm_AlarmManagerService_init(JNIEnv*, jobject)
+     }
+ 
+     for (size_t i = 0; i < fds.size(); i++) {
+-        fds[i] = timerfd_create(android_alarm_to_clockid[i], TFD_NONBLOCK);
++        clockid_t id = android_alarm_to_clockid[i];
++
++        fds[i] = timerfd_create(id, TFD_NONBLOCK);
++        if (fds[i] < 0 && errno == EPERM) {
++            /*
++             * When capability wake_alarm is allowed,
++             * android inside container wakeup's host machine
++             * if host machine suspended with waydroid running.
++             * So in case no wake_alarm cap, we just ignore error,
++             * and create a non ALARM timer in order not to break the logic below
++             * plus android services
++             */
++            switch (id) {
++                case CLOCK_BOOTTIME_ALARM: id = CLOCK_BOOTTIME; break;
++                case CLOCK_REALTIME_ALARM: id = CLOCK_REALTIME; break;
++            }
++
++            fds[i] = timerfd_create(id, TFD_NONBLOCK);
++        }
++
+         if (fds[i] < 0) {
+             log_timerfd_create_error(android_alarm_to_clockid[i]);
+             close(epollfd);
+-- 
+2.48.1
+

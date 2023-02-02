@@ -1,0 +1,28 @@
+From b6774dd40e66491c91f7b6c668cc32d5c5aef995 Mon Sep 17 00:00:00 2001
+From: Ziyang Zhou <ziyang.zhou@outlook.com>
+Date: Sun, 14 Aug 2022 11:57:11 +0800
+Subject: [PATCH 3/3] ignote getTetherStats error
+
+---
+ server/TetherController.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/server/TetherController.cpp b/server/TetherController.cpp
+index 79193574..826ef433 100644
+--- a/server/TetherController.cpp
++++ b/server/TetherController.cpp
+@@ -917,9 +917,11 @@ StatusOr<TetherController::TetherStatsList> TetherController::getTetherStats() {
+         }
+ 
+         if (int ret = addForwardChainStats(statsList, statsString, parsedIptablesOutput)) {
++#if 0
+             return statusFromErrno(-ret, StringPrintf("failed to parse %s tether stats:\n%s",
+                                                       target == V4 ? "IPv4": "IPv6",
+                                                       parsedIptablesOutput.c_str()));
++#endif
+         }
+     }
+ 
+-- 
+2.39.1
+

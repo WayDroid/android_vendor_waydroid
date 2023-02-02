@@ -1,0 +1,26 @@
+From f45d4f8f4c9de63a3911e0680f1a1f5e41fdbcd6 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Mon, 18 Oct 2021 13:20:28 +0800
+Subject: [PATCH 5/6] vold: Disable fstab check
+
+Change-Id: I82e2fccae7865858d20dda6882ad7e52225e5013
+---
+ main.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/main.cpp b/main.cpp
+index 2011247..1936cc5 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -227,6 +227,8 @@ static void coldboot(const char* path) {
+ static int process_config(VolumeManager* vm, VoldConfigs* configs) {
+     ATRACE_NAME("process_config");
+ 
++    if (1) return 0;
++
+     if (!ReadDefaultFstab(&fstab_default)) {
+         PLOG(ERROR) << "Failed to open default fstab";
+         return -1;
+-- 
+2.39.2
+

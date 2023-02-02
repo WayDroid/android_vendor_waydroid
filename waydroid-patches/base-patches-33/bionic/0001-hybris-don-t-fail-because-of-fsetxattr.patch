@@ -1,0 +1,26 @@
+From 12a9b281ed188f9466b512750fb8fa25144365e9 Mon Sep 17 00:00:00 2001
+From: Franz-Josef Haider <f_haider@gmx.at>
+Date: Thu, 28 Mar 2019 13:10:48 -0400
+Subject: [PATCH 1/7] (hybris) don't fail because of fsetxattr
+
+Change-Id: I4d765ff401d6b4f12da0305416cb751eb0c9e96b
+---
+ libc/system_properties/prop_area.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libc/system_properties/prop_area.cpp b/libc/system_properties/prop_area.cpp
+index 42bee9f3e..04be16230 100644
+--- a/libc/system_properties/prop_area.cpp
++++ b/libc/system_properties/prop_area.cpp
+@@ -79,7 +79,7 @@ prop_area* prop_area::map_prop_area_rw(const char* filename, const char* context
+        * property separation.
+        */
+       if (fsetxattr_failed) {
+-        *fsetxattr_failed = true;
++        *fsetxattr_failed = false;
+       }
+     }
+   }
+-- 
+2.40.1
+

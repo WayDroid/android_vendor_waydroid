@@ -1,0 +1,43 @@
+From f559c3481f9a125a1ce7a54d7b2b9b92ad2dcc26 Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Tue, 23 Mar 2021 15:24:31 +0700
+Subject: [PATCH 1/5] (waydroid) add /vendor_extra/lib*/hw to HAL search path
+
+Change-Id: I1a3942554538aeff6bfbb784bf0b3eaacab01ddc
+---
+ hardware.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/hardware.c b/hardware.c
+index 6e72ce9f..154caab5 100644
+--- a/hardware.c
++++ b/hardware.c
+@@ -39,10 +39,12 @@
+ #define HAL_LIBRARY_PATH1 "/system/lib64/hw"
+ #define HAL_LIBRARY_PATH2 "/vendor/lib64/hw"
+ #define HAL_LIBRARY_PATH3 "/odm/lib64/hw"
++#define HAL_LIBRARY_PATH4 "/vendor_extra/lib64/hw"
+ #else
+ #define HAL_LIBRARY_PATH1 "/system/lib/hw"
+ #define HAL_LIBRARY_PATH2 "/vendor/lib/hw"
+ #define HAL_LIBRARY_PATH3 "/odm/lib/hw"
++#define HAL_LIBRARY_PATH4 "/vendor_extra/lib/hw"
+ #endif
+ 
+ /**
+@@ -191,6 +193,12 @@ static int hw_module_exists(char *path, size_t path_len, const char *name,
+         return 0;
+ #endif
+ 
++    // Waydroid: check inside vendor_extra path as last fallback
++    snprintf(path, path_len, "%s/%s.%s.so",
++             HAL_LIBRARY_PATH4, name, subname);
++    if (path_in_path(path, HAL_LIBRARY_PATH4) && access(path, R_OK) == 0)
++        return 0;
++
+     return -ENOENT;
+ }
+ 
+-- 
+2.43.2
+

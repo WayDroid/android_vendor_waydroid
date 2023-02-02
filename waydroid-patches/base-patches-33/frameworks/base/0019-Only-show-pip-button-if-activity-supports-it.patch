@@ -1,0 +1,103 @@
+From 9b0041ded88a2d8984788bf7e98999f1acb4a50e Mon Sep 17 00:00:00 2001
+From: utzcoz <utzcoz@outlook.com>
+Date: Sat, 31 Oct 2020 13:52:32 +0800
+Subject: [PATCH 19/29] Only show pip button if activity supports it
+
+Signed-off-by: utzcoz <utzcoz@outlook.com>
+Change-Id: I1512f35a90592c247c230461bee8b882c5df98dd
+
+Conflicts:
+	core/java/android/app/Activity.java
+	core/java/com/android/internal/widget/DecorCaptionView.java
+---
+ core/java/android/app/Activity.java               | 11 +++++++++++
+ core/java/android/view/Window.java                |  9 +++++++++
+ .../android/internal/widget/DecorCaptionView.java | 15 +++++++++++++++
+ 3 files changed, 35 insertions(+)
+
+diff --git a/core/java/android/app/Activity.java b/core/java/android/app/Activity.java
+index d0df62c6fdf4..2007e531abcd 100644
+--- a/core/java/android/app/Activity.java
++++ b/core/java/android/app/Activity.java
+@@ -1017,6 +1017,17 @@ public class Activity extends ContextThemeWrapper
+             ActivityClient.getInstance().toggleFreeformWindowingMode(mToken);
+         }
+ 
++        // region @bliss
++        /**
++        * Check whether the activity supports pip.
++        * @see android.R.attr#supportsPictureInPicture
++        * @hide
++        */
++        public boolean supportPictureInPictureMode() {
++            return mActivityInfo != null && mActivityInfo.supportsPictureInPicture();
++        }
++        // endregion
++
+         /**
+          * Puts the activity in picture-in-picture mode if the activity supports.
+          * @see android.R.attr#supportsPictureInPicture
+diff --git a/core/java/android/view/Window.java b/core/java/android/view/Window.java
+index 43fc0ac70e00..f3f7801fbd86 100644
+--- a/core/java/android/view/Window.java
++++ b/core/java/android/view/Window.java
+@@ -643,6 +643,15 @@ public abstract class Window {
+          */
+         void toggleFreeformWindowingMode();
+ 
++        // region @bliss
++        /**
++        * Check whether the activity supports pip.
++        * @see android.R.attr#supportsPictureInPicture
++        * @hide
++        */
++        boolean supportPictureInPictureMode();
++        // endregion
++
+         /**
+          * Puts the activity in picture-in-picture mode if the activity supports.
+          * @see android.R.attr#supportsPictureInPicture
+diff --git a/core/java/com/android/internal/widget/DecorCaptionView.java b/core/java/com/android/internal/widget/DecorCaptionView.java
+index 378d1a28bf0c..e5275831584b 100644
+--- a/core/java/com/android/internal/widget/DecorCaptionView.java
++++ b/core/java/com/android/internal/widget/DecorCaptionView.java
+@@ -139,7 +139,12 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+         // By changing the outline provider to BOUNDS, the window can remove its
+         // background without removing the shadow.
+         mOwner.getDecorView().setOutlineProvider(ViewOutlineProvider.BOUNDS);
++        // region @bliss
+         mPip = findViewById(R.id.pip_window);
++        if (mPip != null && !supportPip()) {
++            mPip.setVisibility(View.GONE);
++        }
++        // endregion
+         mMinimize = findViewById(R.id.minimize_window);
+         mMaximize = findViewById(R.id.maximize_window);
+         mClose = findViewById(R.id.close_window);
+@@ -344,6 +349,15 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+         }
+     }
+ 
++    // region @bliss
++    private boolean supportPip() {
++        Window.WindowControllerCallback callback = mOwner.getWindowControllerCallback();
++        if (callback != null) {
++            return callback.supportPictureInPictureMode();
++        }
++        return false;
++    }
++
+     private void minimizeWindow() {
+         Window.WindowControllerCallback callback = mOwner.getWindowControllerCallback();
+         if (callback != null) {
+@@ -357,6 +371,7 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+             callback.enterPictureInPictureModeIfPossible(); /* Send the task to PIP mode if the task supports it. */
+         }
+     }
++    // endregion
+ 
+     public boolean isCaptionShowing() {
+         return mShow;
+-- 
+2.48.1
+

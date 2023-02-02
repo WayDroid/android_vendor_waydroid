@@ -1,0 +1,170 @@
+From 3524ad4cccecc87a853a53efc390a465a5300805 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sun, 26 Jan 2025 00:22:45 +0100
+Subject: [PATCH 29/29] Re-implement PolicyControl for hiding StatusBar and
+ NavBar
+
+Change-Id: I032efb3bd7adc65ceebd5f2fa11143e674d56ab4
+---
+ .../internal/policy/SystemBarUtils.java       | 13 ++++++++
+ .../systemui/navigationbar/NavigationBar.java | 33 +++++++++++++++++++
+ .../window/StatusBarWindowController.java     | 22 +++++++++++++
+ 3 files changed, 68 insertions(+)
+
+diff --git a/core/java/com/android/internal/policy/SystemBarUtils.java b/core/java/com/android/internal/policy/SystemBarUtils.java
+index 7a1ac071a625..55fca0698347 100644
+--- a/core/java/com/android/internal/policy/SystemBarUtils.java
++++ b/core/java/com/android/internal/policy/SystemBarUtils.java
+@@ -23,6 +23,8 @@ import android.util.RotationUtils;
+ import android.view.DisplayCutout;
+ import android.view.Surface;
+ 
++import android.provider.Settings;
++
+ import com.android.internal.R;
+ 
+ /**
+@@ -32,10 +34,19 @@ import com.android.internal.R;
+  */
+ public final class SystemBarUtils {
+ 
++    public static boolean isImmersive(Context context) {
++        String policy = Settings.Global.getString(context.getContentResolver(), Settings.Global.POLICY_CONTROL);
++        return
++            "immersive.full=*".equals(policy) ||
++            "immersive.status=*".equals(policy);
++    }
++
+     /**
+      * Gets the status bar height.
+      */
+     public static int getStatusBarHeight(Context context) {
++        if (isImmersive(context))
++            return 0;
+         return getStatusBarHeight(context.getResources(), context.getDisplay().getCutout());
+     }
+ 
+@@ -56,6 +67,8 @@ public final class SystemBarUtils {
+      */
+     public static int getStatusBarHeightForRotation(
+             Context context, @Surface.Rotation int targetRot) {
++        if (isImmersive(context))
++            return 0;
+         final int rotation = context.getDisplay().getRotation();
+         final DisplayCutout cutout = context.getDisplay().getCutout();
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java
+index dd39bc43c3c4..fbc3c256caf8 100644
+--- a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java
++++ b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java
+@@ -99,6 +99,10 @@ import android.view.accessibility.AccessibilityEvent;
+ import android.view.accessibility.AccessibilityManager;
+ import android.view.inputmethod.InputMethodManager;
+ 
++import android.database.ContentObserver;
++import android.os.Handler;
++import android.provider.Settings;
++
+ import androidx.annotation.Nullable;
+ import androidx.annotation.VisibleForTesting;
+ 
+@@ -281,6 +285,8 @@ public class NavigationBar extends ViewController<NavigationBarView> implements
+     private boolean mImeVisible;
+     private final Rect mSamplingBounds = new Rect();
+ 
++    private boolean mImmersive;
++
+     /**
+      * When quickswitching between apps of different orientations, we draw a secondary home handle
+      * in the position of the first app's orientation. This rect represents the region of that
+@@ -658,6 +664,28 @@ public class NavigationBar extends ViewController<NavigationBarView> implements
+         mView.setEdgeBackGestureHandler(mEdgeBackGestureHandler);
+         mView.setDisplayTracker(mDisplayTracker);
+         mNavBarMode = mNavigationModeController.addListener(mModeChangedListener);
++
++        mImmersive = isImmersive(context);
++        context.getContentResolver().registerContentObserver(
++            Settings.Global.getUriFor(Settings.Global.POLICY_CONTROL),
++            false,
++            new ContentObserver(new Handler(context.getMainLooper())) {
++                @Override
++                public void onChange(boolean selfChange) {
++                    boolean immersive = isImmersive(context);
++                    if (mImmersive != immersive) {
++                        mImmersive = immersive;
++                        repositionNavigationBar(mCurrentRotation);
++                    }
++                }
++            }
++        );
++
++    }
++
++    private static boolean isImmersive(Context context) {
++        String policy = Settings.Global.getString(context.getContentResolver(), Settings.Global.POLICY_CONTROL);
++        return "immersive.full=*".equals(policy);
+     }
+ 
+     public NavigationBarView getView() {
+@@ -1670,6 +1698,11 @@ public class NavigationBar extends ViewController<NavigationBarView> implements
+                     break;
+             }
+         }
++        if (mImmersive) {
++            height = 0;
++            width = 0;
++            insetsHeight = 0;
++        }
+         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                 width,
+                 height,
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/window/StatusBarWindowController.java b/packages/SystemUI/src/com/android/systemui/statusbar/window/StatusBarWindowController.java
+index 7a4e35f159ab..fb82caad7f0d 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/window/StatusBarWindowController.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/window/StatusBarWindowController.java
+@@ -41,6 +41,10 @@ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.WindowManager;
+ 
++import android.database.ContentObserver;
++import android.os.Handler;
++import android.provider.Settings;
++
+ import com.android.internal.policy.SystemBarUtils;
+ import com.android.systemui.R;
+ import com.android.systemui.animation.ActivityLaunchAnimator;
+@@ -81,6 +85,8 @@ public class StatusBarWindowController {
+     private WindowManager.LayoutParams mLp;
+     private final WindowManager.LayoutParams mLpChanged;
+ 
++    private boolean mImmersive;
++
+     @Inject
+     public StatusBarWindowController(
+             Context context,
+@@ -108,6 +114,22 @@ public class StatusBarWindowController {
+                 unfoldProgressProvider -> unfoldProgressProvider.addCallback(
+                         new JankMonitorTransitionProgressListener(
+                                 /* attachedViewProvider=*/ () -> mStatusBarWindowView)));
++
++        mImmersive = SystemBarUtils.isImmersive(context);
++        context.getContentResolver().registerContentObserver(
++            Settings.Global.getUriFor(Settings.Global.POLICY_CONTROL),
++            false,
++            new ContentObserver(new Handler(context.getMainLooper())) {
++                @Override
++                public void onChange(boolean selfChange) {
++                    boolean immersive = SystemBarUtils.isImmersive(context);
++                    if (mImmersive != immersive) {
++                        mImmersive = immersive;
++                        refreshStatusBarHeight();
++                    }
++                }
++            }
++        );
+     }
+ 
+     public int getStatusBarHeight() {
+-- 
+2.48.1
+

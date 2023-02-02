@@ -1,0 +1,76 @@
+From 8aef4eb2a72764f94ce80bbc1a203a893e238642 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sat, 19 Feb 2022 23:44:22 +0100
+Subject: [PATCH 27/27] mediaextractor: seccomp: Allow memfd related syscalls
+
+Change-Id: Ia7e000e44f45698ec14270fc0d723454225ebb1d
+---
+ .../mediaextractor/seccomp_policy/mediaextractor-arm.policy  | 5 +++++
+ .../seccomp_policy/mediaextractor-arm64.policy               | 3 +++
+ .../mediaextractor/seccomp_policy/mediaextractor-x86.policy  | 5 +++++
+ .../seccomp_policy/mediaextractor-x86_64.policy              | 3 +++
+ 4 files changed, 16 insertions(+)
+
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy b/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
+index e1f7fe7265..e0a71996e2 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-arm.policy
+@@ -44,6 +44,11 @@ getrandom: 1
+ timer_create: 1
+ timer_settime: 1
+ timer_delete: 1
++memfd_create: 1
++ftruncate: 1
++ftruncate64: 1
++fcntl: 1
++fcntl64: 1
+ 
+ # for dynamically loading extractors
+ pread64: 1
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-arm64.policy b/services/mediaextractor/seccomp_policy/mediaextractor-arm64.policy
+index e54c9187e7..34c5014a4f 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-arm64.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-arm64.policy
+@@ -33,6 +33,9 @@ getrandom: 1
+ timer_create: 1
+ timer_settime: 1
+ timer_delete: 1
++memfd_create: 1
++ftruncate: 1
++fcntl: 1
+ 
+ # for FileSource
+ readlinkat: 1
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy b/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
+index 5b3762712d..a4c2a16304 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-x86.policy
+@@ -42,6 +42,11 @@ getrandom: 1
+ timer_create: 1
+ timer_settime: 1
+ timer_delete: 1
++memfd_create: 1
++ftruncate: 1
++ftruncate64: 1
++fcntl: 1
++fcntl64: 1
+ 
+ # for dynamically loading extractors
+ getdents64: 1
+diff --git a/services/mediaextractor/seccomp_policy/mediaextractor-x86_64.policy b/services/mediaextractor/seccomp_policy/mediaextractor-x86_64.policy
+index 51df1a238d..a133e20b2e 100644
+--- a/services/mediaextractor/seccomp_policy/mediaextractor-x86_64.policy
++++ b/services/mediaextractor/seccomp_policy/mediaextractor-x86_64.policy
+@@ -37,6 +37,9 @@ getrandom: 1
+ timer_create: 1
+ timer_settime: 1
+ timer_delete: 1
++memfd_create: 1
++ftruncate: 1
++fcntl: 1
+ 
+ # for dynamically loading extractors
+ getdents64: 1
+-- 
+2.40.0
+

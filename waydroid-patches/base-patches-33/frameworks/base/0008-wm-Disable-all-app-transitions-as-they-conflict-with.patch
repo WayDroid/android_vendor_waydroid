@@ -1,0 +1,67 @@
+From 3fe3f6a6719ee94c370fac9d225073b970d500a7 Mon Sep 17 00:00:00 2001
+From: Simon Fels <morphis@gravedo.de>
+Date: Thu, 10 Nov 2016 08:04:23 +0100
+Subject: [PATCH 08/29] wm: Disable all app transitions as they conflict with
+ our window management
+
+The name of any app surface must be prefixed with "PACKAGE_NAME/" in order to
+matched to its application by the Waydroid hwcomposer
+
+Change-Id: I208080ac83100f5e6e7116c041b17fdd8f9328ab
+---
+ .../wm/shell/startingsurface/StartingSurfaceDrawer.java       | 2 +-
+ .../android/wm/shell/startingsurface/TaskSnapshotWindow.java  | 4 ++--
+ services/core/java/com/android/server/wm/AppTransition.java   | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/StartingSurfaceDrawer.java b/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/StartingSurfaceDrawer.java
+index 22e804547d5c..05f0e5faa516 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/StartingSurfaceDrawer.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/StartingSurfaceDrawer.java
+@@ -309,7 +309,7 @@ public class StartingSurfaceDrawer {
+             params.privateFlags |= WindowManager.LayoutParams.PRIVATE_FLAG_COMPATIBLE_WINDOW;
+         }
+ 
+-        params.setTitle("Splash Screen " + activityInfo.packageName);
++        params.setTitle(activityInfo.packageName + "/SplashScreen");
+ 
+         // TODO(b/173975965) tracking performance
+         // Prepare the splash screen content view on splash screen worker thread in parallel, so the
+diff --git a/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/TaskSnapshotWindow.java b/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/TaskSnapshotWindow.java
+index 7b498e4f54ec..fe6929d16ae7 100644
+--- a/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/TaskSnapshotWindow.java
++++ b/libs/WindowManager/Shell/src/com/android/wm/shell/startingsurface/TaskSnapshotWindow.java
+@@ -119,7 +119,7 @@ public class TaskSnapshotWindow {
+             | FLAG_SECURE;
+ 
+     private static final String TAG = StartingWindowController.TAG;
+-    private static final String TITLE_FORMAT = "SnapshotStartingWindow for taskId=%s";
++    private static final String TITLE_FORMAT = "/SnapshotStartingWindow";
+ 
+     private static final long DELAY_REMOVAL_TIME_GENERAL = 100;
+     /**
+@@ -197,7 +197,7 @@ public class TaskSnapshotWindow {
+         layoutParams.setFitInsetsSides(attrs.getFitInsetsSides());
+         layoutParams.setFitInsetsIgnoringVisibility(attrs.isFitInsetsIgnoringVisibility());
+ 
+-        layoutParams.setTitle(String.format(TITLE_FORMAT, taskId));
++        layoutParams.setTitle(mainWindowParams.packageName + TITLE_FORMAT);
+ 
+         final Point taskSize = snapshot.getTaskSize();
+         final Rect taskBounds = new Rect(0, 0, taskSize.x, taskSize.y);
+diff --git a/services/core/java/com/android/server/wm/AppTransition.java b/services/core/java/com/android/server/wm/AppTransition.java
+index adf862b78656..56a404ca5162 100644
+--- a/services/core/java/com/android/server/wm/AppTransition.java
++++ b/services/core/java/com/android/server/wm/AppTransition.java
+@@ -910,7 +910,7 @@ public class AppTransition implements Dump {
+         }
+         setAppTransitionFinishedCallbackIfNeeded(a);
+ 
+-        return a;
++        return null;
+     }
+ 
+     int getAppRootTaskClipMode() {
+-- 
+2.48.1
+

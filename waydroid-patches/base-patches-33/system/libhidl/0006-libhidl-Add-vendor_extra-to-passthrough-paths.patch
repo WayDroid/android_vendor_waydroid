@@ -1,0 +1,54 @@
+From 8be85f9d06dd8e24830c0ca62262290e8879615c Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Sun, 11 Apr 2021 13:23:47 +0430
+Subject: [PATCH 6/8] libhidl: Add vendor_extra to passthrough paths
+
+---
+ base/include/hidl/HidlInternal.h | 4 ++++
+ transport/ServiceManagement.cpp  | 3 ++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/base/include/hidl/HidlInternal.h b/base/include/hidl/HidlInternal.h
+index 3d1a444..2924d0d 100644
+--- a/base/include/hidl/HidlInternal.h
++++ b/base/include/hidl/HidlInternal.h
+@@ -119,18 +119,22 @@ private:
+ 
+ #define HAL_LIBRARY_PATH_SYSTEM_64BIT "/system/lib64/hw/"
+ #define HAL_LIBRARY_PATH_VENDOR_64BIT "/vendor/lib64/hw/"
++#define HAL_LIBRARY_PATH_VENDOR_EXTRA_64BIT "/vendor_extra/lib64/hw/"
+ #define HAL_LIBRARY_PATH_ODM_64BIT    "/odm/lib64/hw/"
+ #define HAL_LIBRARY_PATH_SYSTEM_32BIT "/system/lib/hw/"
+ #define HAL_LIBRARY_PATH_VENDOR_32BIT "/vendor/lib/hw/"
++#define HAL_LIBRARY_PATH_VENDOR_EXTRA_32BIT "/vendor_extra/lib/hw/"
+ #define HAL_LIBRARY_PATH_ODM_32BIT    "/odm/lib/hw/"
+ 
+ #if defined(__LP64__)
+ #define HAL_LIBRARY_PATH_SYSTEM HAL_LIBRARY_PATH_SYSTEM_64BIT
+ #define HAL_LIBRARY_PATH_VENDOR HAL_LIBRARY_PATH_VENDOR_64BIT
++#define HAL_LIBRARY_PATH_VENDOR_EXTRA HAL_LIBRARY_PATH_VENDOR_EXTRA_64BIT
+ #define HAL_LIBRARY_PATH_ODM    HAL_LIBRARY_PATH_ODM_64BIT
+ #else
+ #define HAL_LIBRARY_PATH_SYSTEM HAL_LIBRARY_PATH_SYSTEM_32BIT
+ #define HAL_LIBRARY_PATH_VENDOR HAL_LIBRARY_PATH_VENDOR_32BIT
++#define HAL_LIBRARY_PATH_VENDOR_EXTRA HAL_LIBRARY_PATH_VENDOR_EXTRA_32BIT
+ #define HAL_LIBRARY_PATH_ODM    HAL_LIBRARY_PATH_ODM_32BIT
+ #endif
+ 
+diff --git a/transport/ServiceManagement.cpp b/transport/ServiceManagement.cpp
+index b810e9a..7206779 100644
+--- a/transport/ServiceManagement.cpp
++++ b/transport/ServiceManagement.cpp
+@@ -374,7 +374,8 @@ struct PassthroughServiceManager : IServiceManager1_1 {
+ 
+         static std::string halLibPathVndkSp = details::getVndkSpHwPath();
+         std::vector<std::string> paths = {
+-            HAL_LIBRARY_PATH_ODM, HAL_LIBRARY_PATH_VENDOR, halLibPathVndkSp,
++            HAL_LIBRARY_PATH_ODM, HAL_LIBRARY_PATH_VENDOR,
++            HAL_LIBRARY_PATH_VENDOR_EXTRA, halLibPathVndkSp,
+ #ifndef __ANDROID_VNDK__
+             HAL_LIBRARY_PATH_SYSTEM,
+ #endif
+-- 
+2.39.1
+

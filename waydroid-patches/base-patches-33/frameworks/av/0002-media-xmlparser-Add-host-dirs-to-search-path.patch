@@ -1,0 +1,25 @@
+From 986e54a37be81d2431aee461c38ef1a96032f9c9 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Mon, 3 May 2021 02:50:23 +0430
+Subject: [PATCH 02/27] media: xmlparser: Add host dirs to search path
+
+---
+ .../include/media/stagefright/xmlparser/MediaCodecsXmlParser.h  | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/media/libstagefright/xmlparser/include/media/stagefright/xmlparser/MediaCodecsXmlParser.h b/media/libstagefright/xmlparser/include/media/stagefright/xmlparser/MediaCodecsXmlParser.h
+index e224452fba..749b2d79d6 100644
+--- a/media/libstagefright/xmlparser/include/media/stagefright/xmlparser/MediaCodecsXmlParser.h
++++ b/media/libstagefright/xmlparser/include/media/stagefright/xmlparser/MediaCodecsXmlParser.h
+@@ -37,6 +37,8 @@ public:
+     // /vendor/etc.
+     static std::vector<std::string> getDefaultSearchDirs() {
+         return { "/product/etc",
++                 "/odm_extra/etc",
++                 "/vendor_extra/etc",
+                  "/odm/etc",
+                  "/vendor/etc",
+                  "/system/etc" };
+-- 
+2.40.0
+

@@ -1,0 +1,41 @@
+From 3287b3733fd656d48818767aa2a9b0129cd696f9 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sun, 15 May 2022 12:41:25 +0200
+Subject: [PATCH] Make tinyxml2 apex_available
+
+Included from libhidlbase, so whitelist it for all the apexes that
+use libhidlbase
+
+Change-Id: I68e48abe730223e3227f3855f7155a6a678b2c5d
+---
+ Android.bp | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/Android.bp b/Android.bp
+index 21e5861..2274692 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -67,13 +67,19 @@ cc_library {
+ 
+     export_include_dirs: ["."],
+ 
+-    min_sdk_version: "S",
++    min_sdk_version: "29",
+ 
+     apex_available: [
+         "com.android.art",
+         "com.android.art.debug",
+         "com.android.bluetooth",
+         "//apex_available:platform", // For odsign.
++        "com.android.neuralnetworks",
++        "test_com.android.neuralnetworks",
++        "com.android.bluetooth",
++        "com.android.media",
++        "com.android.media.swcodec",
++        "com.android.tethering",
+     ],
+ }
+ 
+-- 
+2.39.1
+

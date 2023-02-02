@@ -1,0 +1,33 @@
+From abaa55e80e3ce5d392619302cfe225f4ba57abc0 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Wed, 14 Apr 2021 11:25:37 +0430
+Subject: [PATCH 3/8] Don't wait for host hwbinder
+
+---
+ transport/ServiceManagement.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/transport/ServiceManagement.cpp b/transport/ServiceManagement.cpp
+index b051ab1..a33c473 100644
+--- a/transport/ServiceManagement.cpp
++++ b/transport/ServiceManagement.cpp
+@@ -214,13 +214,14 @@ sp<IServiceManager1_2> defaultServiceManager1_2(bool useHostHwBinder) {
+             return gDefaultServiceManager;
+         }
+ 
+-        if (access("/dev/hwbinder", F_OK|R_OK|W_OK) != 0) {
++        if (access(useHostHwBinder ? "/dev/host_hwbinder" : "/dev/hwbinder", F_OK|R_OK|W_OK) != 0) {
+             // HwBinder not available on this device or not accessible to
+             // this process.
+             return nullptr;
+         }
+ 
+-        waitForHwServiceManager();
++        if (!useHostHwBinder)
++            waitForHwServiceManager();
+ 
+         while (gDefaultServiceManager == nullptr) {
+             gDefaultServiceManager =
+-- 
+2.39.1
+

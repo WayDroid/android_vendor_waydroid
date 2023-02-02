@@ -1,0 +1,29 @@
+From 763807fc2a5f315832df830b35a09cc4dadc707d Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Wed, 28 Apr 2021 15:44:32 +0700
+Subject: [PATCH 03/29] (waydroid) core/jni: start thread pool for host
+ hwbinder when needed
+
+---
+ core/jni/android_os_HwBinder.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/core/jni/android_os_HwBinder.cpp b/core/jni/android_os_HwBinder.cpp
+index 781895eeeaba..540a5a7898cb 100644
+--- a/core/jni/android_os_HwBinder.cpp
++++ b/core/jni/android_os_HwBinder.cpp
+@@ -327,8 +327,9 @@ static jobject JHwBinder_native_getService(
+         return nullptr;
+     }
+ 
+-    LOG(INFO) << "HwBinder: Starting thread pool for getting: " << ifaceName << "/" << serviceName;
+-    ::android::hardware::ProcessState::self()->startThreadPool();
++    bool useHostHwBinder = service->isHostHwBinder();
++    LOG(INFO) << "HwBinder: Starting " << (useHostHwBinder ? "host_hwbinder" : "hwbinder") << "thread pool for getting: " << ifaceName << "/" << serviceName;
++    ::android::hardware::ProcessState::self(useHostHwBinder)->startThreadPool();
+ 
+     return JHwRemoteBinder::NewObject(env, service);
+ }
+-- 
+2.48.1
+

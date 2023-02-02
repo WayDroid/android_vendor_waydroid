@@ -1,0 +1,65 @@
+From c9ec389e1e1f84ba05d8899169e483b1c3d4027b Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Wed, 11 Nov 2020 08:08:51 +0700
+Subject: [PATCH 02/13] (waydroid) init: modify mount_all to skip mounts and
+ trigger nonencrypted state
+
+Change-Id: Iae8cffa6aeb2d56f35a51f0e9f52fd92402c43e9
+---
+ init/builtins.cpp | 10 +++++++---
+ rootdir/init.rc   |  4 ++++
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/init/builtins.cpp b/init/builtins.cpp
+index 01db4f5da..550621208 100644
+--- a/init/builtins.cpp
++++ b/init/builtins.cpp
+@@ -650,7 +650,8 @@ static Result<void> do_mount_all(const BuiltinArguments& args) {
+     std::string prop_name = "ro.boottime.init.mount_all."s + prop_post_fix;
+     android::base::Timer t;
+ 
+-    Fstab fstab;
++    // Waydroid: mounts are handled by LXC container
++    /*Fstab fstab;
+     if (mount_all->fstab_path.empty()) {
+         if (!ReadDefaultFstab(&fstab)) {
+             return Error() << "Could not read default fstab";
+@@ -659,15 +660,18 @@ static Result<void> do_mount_all(const BuiltinArguments& args) {
+         if (!ReadFstabFromFile(mount_all->fstab_path, &fstab)) {
+             return Error() << "Could not read fstab";
+         }
+-    }
++    }*/
+ 
+-    auto mount_fstab_result = fs_mgr_mount_all(&fstab, mount_all->mode);
++    /*auto mount_fstab_result = fs_mgr_mount_all(&fstab, mount_all->mode);*/
+     SetProperty(prop_name, std::to_string(t.duration().count()));
+ 
+     if (mount_all->import_rc) {
+         import_late(mount_all->rc_paths);
+     }
+ 
++    // Waydroid: filesystem mount is handled outside container, always non-encrypted
++    MountAllResult mount_fstab_result = {FS_MGR_MNTALL_DEV_NOT_ENCRYPTABLE, true};
++
+     if (mount_fstab_result.userdata_mounted) {
+         // This call to fs_mgr_mount_all mounted userdata. Keep the result in
+         // order for userspace reboot to correctly remount userdata.
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 2b53d883e..19c5f8853 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -547,6 +547,10 @@ on late-init
+     trigger early-boot
+     trigger boot
+ 
++on fs
++    # Do fake mount_all for Waydroid
++    mount_all /dev/null
++
+ on early-fs
+     # Once metadata has been mounted, we'll need vold to deal with userdata checkpointing
+     start vold
+-- 
+2.48.1
+

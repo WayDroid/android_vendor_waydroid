@@ -1,0 +1,44 @@
+From 858b877d767106e9c526bf73741be55ddce21cc8 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Mon, 14 Mar 2022 23:02:05 +0000
+Subject: [PATCH 10/12] GraphicBufferMapper: Skip buffer validation
+
+Change-Id: Ia7580cec2e4c89f8de7768361ad9852374991fda
+---
+ libs/ui/GraphicBufferMapper.cpp | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/libs/ui/GraphicBufferMapper.cpp b/libs/ui/GraphicBufferMapper.cpp
+index a98e697eb1..8e06f0e201 100644
+--- a/libs/ui/GraphicBufferMapper.cpp
++++ b/libs/ui/GraphicBufferMapper.cpp
+@@ -83,8 +83,8 @@ void GraphicBufferMapper::dumpBufferToSystemLog(buffer_handle_t bufferHandle, bo
+ }
+ 
+ status_t GraphicBufferMapper::importBuffer(buffer_handle_t rawHandle,
+-        uint32_t width, uint32_t height, uint32_t layerCount,
+-        PixelFormat format, uint64_t usage, uint32_t stride,
++        __attribute__ ((unused)) uint32_t width, __attribute__ ((unused)) uint32_t height, __attribute__ ((unused)) uint32_t layerCount,
++        __attribute__ ((unused)) PixelFormat format, __attribute__ ((unused)) uint64_t usage, __attribute__ ((unused)) uint32_t stride,
+         buffer_handle_t* outHandle)
+ {
+     ATRACE_CALL();
+@@ -96,13 +96,13 @@ status_t GraphicBufferMapper::importBuffer(buffer_handle_t rawHandle,
+         return error;
+     }
+ 
+-    error = mMapper->validateBufferSize(bufferHandle, width, height, format, layerCount, usage,
++    /*error = mMapper->validateBufferSize(bufferHandle, width, height, format, layerCount, usage,
+                                         stride);
+     if (error != NO_ERROR) {
+         ALOGE("validateBufferSize(%p) failed: %d", rawHandle, error);
+         freeBuffer(bufferHandle);
+         return static_cast<status_t>(error);
+-    }
++    }*/
+ 
+     *outHandle = bufferHandle;
+ 
+-- 
+2.48.1
+

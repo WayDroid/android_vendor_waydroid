@@ -1,0 +1,82 @@
+From c95d4ec91d94bf77641bc18d9301e37533c4971d Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 27 Dec 2020 00:29:16 +0200
+Subject: [PATCH] (halium) disable SELinux parts
+
+Change-Id: Id42e1272885d112f22dcb5a9f6c4d96f7de06291
+---
+ AccessControl.cpp  | 13 +++++++------
+ Android.bp         |  1 +
+ ServiceManager.cpp |  2 +-
+ 3 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/AccessControl.cpp b/AccessControl.cpp
+index c8366ca..b9d945c 100644
+--- a/AccessControl.cpp
++++ b/AccessControl.cpp
+@@ -38,10 +38,11 @@ using android::FQName;
+ 
+ AccessControl::AccessControl() {
+     mSeHandle = selinux_android_hw_service_context_handle();
+-    LOG_ALWAYS_FATAL_IF(mSeHandle == nullptr, "Failed to acquire SELinux handle.");
++    // Disabled in Halium
++    /*LOG_ALWAYS_FATAL_IF(mSeHandle == nullptr, "Failed to acquire SELinux handle.");*/
+ 
+     if (getcon(&mSeContext) != 0) {
+-        LOG_ALWAYS_FATAL("Failed to acquire hwservicemanager context.");
++        /*LOG_ALWAYS_FATAL("Failed to acquire hwservicemanager context.");*/
+     }
+ 
+     selinux_status_open(true);
+@@ -104,8 +105,8 @@ bool AccessControl::checkPermission(const CallingContext& source, const char *ta
+     ad.sid = source.sid.c_str();
+     ad.interfaceName = interface;
+ 
+-    allowed = (selinux_check_access(source.sid.c_str(), targetContext, "hwservice_manager",
+-                                    perm, (void *) &ad) == 0);
++    allowed = true; /*(selinux_check_access(source.sid.c_str(), targetContext, "hwservice_manager",
++                                    perm, (void *) &ad) == 0);*/
+ 
+     return allowed;
+ }
+@@ -115,10 +116,10 @@ bool AccessControl::checkPermission(const CallingContext& source, const char *pe
+     bool allowed = false;
+ 
+     // Lookup service in hwservice_contexts
+-    if (selabel_lookup(mSeHandle, &targetContext, interface, 0) != 0) {
++    /*if (selabel_lookup(mSeHandle, &targetContext, interface, 0) != 0) {
+         ALOGE("No match for interface %s in hwservice_contexts", interface);
+         return false;
+-    }
++    }*/
+ 
+     allowed = checkPermission(source, targetContext, perm, interface);
+ 
+diff --git a/Android.bp b/Android.bp
+index 84c9b72..0ea6a5d 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -35,6 +35,7 @@ cc_defaults {
+         "-Wall",
+         "-Wextra",
+         "-Werror",
++        "-Wno-unused-parameter",
+     ],
+     shared_libs: [
+         "libhidlbase",
+diff --git a/ServiceManager.cpp b/ServiceManager.cpp
+index 283b054..eb75a82 100644
+--- a/ServiceManager.cpp
++++ b/ServiceManager.cpp
+@@ -40,7 +40,7 @@ AccessControl::CallingContext getBinderCallingContext() {
+     const auto& self = IPCThreadState::self();
+ 
+     pid_t pid = self->getCallingPid();
+-    const char* sid = self->getCallingSid();
++    const char* sid = ""; /*self->getCallingSid();*/
+ 
+     if (sid == nullptr) {
+         if (pid != getpid()) {
+-- 
+2.39.1
+

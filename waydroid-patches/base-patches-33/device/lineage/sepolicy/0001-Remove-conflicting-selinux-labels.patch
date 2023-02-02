@@ -1,0 +1,25 @@
+From 8655f0cb20077a6fc2d44eb96a37da4b8e9059d7 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Mon, 10 Jul 2023 13:56:51 +0200
+Subject: [PATCH] Remove conflicting selinux labels
+
+Change-Id: I47b93949fd8260da323363732d425080fb519e82
+---
+ common/private/property_contexts | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/common/private/property_contexts b/common/private/property_contexts
+index af7e1b4..ac83794 100644
+--- a/common/private/property_contexts
++++ b/common/private/property_contexts
+@@ -1,7 +1,3 @@
+-# Aux camera
+-vendor.camera.aux.packageexcludelist   u:object_r:vendor_persist_camera_prop:s0
+-vendor.camera.aux.packagelist          u:object_r:vendor_persist_camera_prop:s0
+-
+ # Bluetooth
+ bluetooth.hci.disabled_commands        u:object_r:bluetooth_config_prop:s0
+ 
+-- 
+2.41.0
+

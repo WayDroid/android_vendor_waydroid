@@ -1,0 +1,25 @@
+From 564df1716c28334f25d24671028b188d9919efb1 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Fri, 21 May 2021 01:30:12 +0800
+Subject: [PATCH] nfc: Add host search paths
+
+Change-Id: Ib6f490aecc1dd03997c19bcf1ed6bfe52ca1f0bc
+---
+ src/adaptation/nfc_config.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/adaptation/nfc_config.cc b/src/adaptation/nfc_config.cc
+index 264968e4..c1cf3b4f 100644
+--- a/src/adaptation/nfc_config.cc
++++ b/src/adaptation/nfc_config.cc
+@@ -30,6 +30,7 @@ using namespace ::android::base;
+ namespace {
+ std::string searchConfigPath(std::string file_name) {
+   const std::vector<std::string> search_path = {
++      "/odm_extra/etc/", "/vendor_extra/etc/",
+       "/product/etc/", "/odm/etc/", "/vendor/etc/", "/system_ext/etc/", "/etc/",
+   };
+   for (std::string path : search_path) {
+-- 
+2.39.1
+

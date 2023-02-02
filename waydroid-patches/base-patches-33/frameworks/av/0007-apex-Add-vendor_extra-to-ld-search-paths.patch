@@ -1,0 +1,82 @@
+From 05281c17da29486e5edd5d33d0c5ad01aba81c1c Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Sat, 22 May 2021 01:00:26 +0430
+Subject: [PATCH 07/27] apex: Add vendor_extra to ld search paths
+
+---
+ apex/ld.config.txt | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/apex/ld.config.txt b/apex/ld.config.txt
+index 713f0b7fc9..d906183871 100644
+--- a/apex/ld.config.txt
++++ b/apex/ld.config.txt
+@@ -78,21 +78,28 @@ namespace.sphal.visible = true
+ # These are dlopen'ed by libvndksupport.so.
+ namespace.sphal.search.paths  = /odm/${LIB}
+ namespace.sphal.search.paths += /vendor/${LIB}
++namespace.sphal.search.paths += /vendor_extra/${LIB}
+ 
+ namespace.sphal.permitted.paths  = /odm/${LIB}
+ namespace.sphal.permitted.paths += /vendor/${LIB}
+ namespace.sphal.permitted.paths += /vendor/${LIB}/hw
+ namespace.sphal.permitted.paths += /system/vendor/${LIB}
++namespace.sphal.permitted.paths += /vendor_extra/${LIB}
++namespace.sphal.permitted.paths += /vendor_extra/${LIB}/hw
+ 
+ namespace.sphal.asan.search.paths  = /data/asan/odm/${LIB}
+ namespace.sphal.asan.search.paths +=           /odm/${LIB}
+ namespace.sphal.asan.search.paths += /data/asan/vendor/${LIB}
+ namespace.sphal.asan.search.paths +=           /vendor/${LIB}
++namespace.sphal.asan.search.paths += /data/asan/vendor_extra/${LIB}
++namespace.sphal.asan.search.paths +=           /vendor_extra/${LIB}
+ 
+ namespace.sphal.asan.permitted.paths  = /data/asan/odm/${LIB}
+ namespace.sphal.asan.permitted.paths +=           /odm/${LIB}
+ namespace.sphal.asan.permitted.paths += /data/asan/vendor/${LIB}
+ namespace.sphal.asan.permitted.paths +=           /vendor/${LIB}
++namespace.sphal.asan.permitted.paths += /data/asan/vendor_extra/${LIB}
++namespace.sphal.asan.permitted.paths +=           /vendor_extra/${LIB}
+ 
+ # Keep the below in sync with "vndk" namespace in system's /etc/ld.config.txt
+ # System's sphal namespace links to vndk namespace for %VNDK_SAMEPROCESS_LIBRARIES%,
+@@ -102,6 +109,7 @@ namespace.sphal.asan.permitted.paths +=           /vendor/${LIB}
+ namespace.sphal.search.paths += /odm/${LIB}/vndk-sp
+ namespace.sphal.search.paths += /vendor/${LIB}/vndk-sp
+ namespace.sphal.search.paths += /system/${LIB}/vndk-sp${VNDK_VER}
++namespace.sphal.search.paths += /vendor_extra/${LIB}/vndk-sp
+ 
+ namespace.sphal.permitted.paths += /odm/${LIB}/hw
+ namespace.sphal.permitted.paths += /odm/${LIB}/egl
+@@ -111,6 +119,8 @@ namespace.sphal.permitted.paths += /system/vendor/${LIB}/hw
+ namespace.sphal.permitted.paths += /system/vendor/${LIB}/egl
+ # This is exceptionally required since android.hidl.memory@1.0-impl.so is here
+ namespace.sphal.permitted.paths += /system/${LIB}/vndk-sp${VNDK_VER}/hw
++namespace.sphal.permitted.paths += /vendor_extra/${LIB}/hw
++namespace.sphal.permitted.paths += /vendor_extra/${LIB}/egl
+ 
+ namespace.sphal.asan.search.paths += /data/asan/odm/${LIB}/vndk-sp
+ namespace.sphal.asan.search.paths +=           /odm/${LIB}/vndk-sp
+@@ -118,6 +128,8 @@ namespace.sphal.asan.search.paths += /data/asan/vendor/${LIB}/vndk-sp
+ namespace.sphal.asan.search.paths +=           /vendor/${LIB}/vndk-sp
+ namespace.sphal.asan.search.paths += /data/asan/system/${LIB}/vndk-sp${VNDK_VER}
+ namespace.sphal.asan.search.paths +=           /system/${LIB}/vndk-sp${VNDK_VER}
++namespace.sphal.asan.search.paths += /data/asan/vendor_extra/${LIB}/vndk-sp
++namespace.sphal.asan.search.paths +=           /vendor_extra/${LIB}/vndk-sp
+ 
+ namespace.sphal.asan.permitted.paths += /data/asan/odm/${LIB}/hw
+ namespace.sphal.asan.permitted.paths +=           /odm/${LIB}/hw
+@@ -127,6 +139,10 @@ namespace.sphal.asan.permitted.paths += /data/asan/vendor/${LIB}/hw
+ namespace.sphal.asan.permitted.paths +=           /vendor/${LIB}/hw
+ namespace.sphal.asan.permitted.paths += /data/asan/vendor/${LIB}/egl
+ namespace.sphal.asan.permitted.paths +=           /vendor/${LIB}/egl
++namespace.sphal.asan.permitted.paths += /data/asan/vendor_extra/${LIB}/hw
++namespace.sphal.asan.permitted.paths +=           /vendor_extra/${LIB}/hw
++namespace.sphal.asan.permitted.paths += /data/asan/vendor_extra/${LIB}/egl
++namespace.sphal.asan.permitted.paths +=           /vendor_extra/${LIB}/egl
+ 
+ namespace.sphal.asan.permitted.paths += /data/asan/system/${LIB}/vndk-sp${VNDK_VER}/hw
+ namespace.sphal.asan.permitted.paths +=           /system/${LIB}/vndk-sp${VNDK_VER}/hw
+-- 
+2.40.0
+

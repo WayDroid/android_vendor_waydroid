@@ -1,0 +1,81 @@
+From bac6b51e4f640d791cc682d25f0f0f324e6cddbf Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Mon, 26 Dec 2022 00:17:16 +0100
+Subject: [PATCH 22/29] Make freeform minimize button actually minimize the
+ wayland window
+
+Change-Id: I2bd838f0a158e80144ccda0535d5cc4f15ad4919
+---
+ Android.bp                                         |  2 ++
+ .../android/internal/widget/DecorCaptionView.java  | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/Android.bp b/Android.bp
+index e48ecf5f94b7..16809604e373 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -248,6 +248,8 @@ java_library {
+         "com.android.sysprop.localization",
+         "PlatformProperties",
+         "SurfaceFlingerProperties",
++
++        "vendor.waydroid.window-V1.0-java",
+     ],
+     sdk_version: "core_platform",
+     installable: false,
+diff --git a/core/java/com/android/internal/widget/DecorCaptionView.java b/core/java/com/android/internal/widget/DecorCaptionView.java
+index f323380dd4ca..c27778078c22 100644
+--- a/core/java/com/android/internal/widget/DecorCaptionView.java
++++ b/core/java/com/android/internal/widget/DecorCaptionView.java
+@@ -18,6 +18,7 @@ package com.android.internal.widget;
+ 
+ import android.content.Context;
+ import android.graphics.Rect;
++import android.os.RemoteException;
+ import android.util.AttributeSet;
+ import android.view.GestureDetector;
+ import android.view.MotionEvent;
+@@ -32,6 +33,9 @@ import com.android.internal.policy.DecorView;
+ import com.android.internal.policy.PhoneWindow;
+ 
+ import java.util.ArrayList;
++import java.util.NoSuchElementException;
++
++import vendor.waydroid.window.V1_0.IWaydroidWindow;
+ 
+ /**
+  * This class represents the special screen elements to control a window on freeform
+@@ -106,6 +110,7 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+     private View mBack;
+     private final Rect mBackRect = new Rect();
+     // endregion
++    private IWaydroidWindow mWaydroidWindow;
+ 
+     public DecorCaptionView(Context context) {
+         super(context);
+@@ -127,6 +132,10 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+         mGestureDetector = new GestureDetector(context, this);
+         setContentDescription(context.getString(R.string.accessibility_freeform_caption,
+                 context.getPackageManager().getApplicationLabel(context.getApplicationInfo())));
++
++        try {
++            mWaydroidWindow = IWaydroidWindow.getService(false /* retry */);
++        } catch (NoSuchElementException | RemoteException ignored) {}
+     }
+ 
+     @Override
+@@ -381,6 +390,11 @@ public class DecorCaptionView extends ViewGroup implements View.OnTouchListener,
+     }
+ 
+     private void minimizeWindow() {
++        try {
++            if (mWaydroidWindow != null && mWaydroidWindow.minimize(getContext().getPackageName()))
++                return;
++        } catch (RemoteException ignored) {}
++
+         Window.WindowControllerCallback callback = mOwner.getWindowControllerCallback();
+         if (callback != null) {
+             callback.moveTaskToBack(true);
+-- 
+2.48.1
+

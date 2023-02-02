@@ -1,0 +1,27 @@
+From e29a79d50919bfa627b128b32e7fd3d584f83e20 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Mon, 6 Feb 2023 00:37:38 +0100
+Subject: [PATCH] hack: Remove Bluetooth app from apex
+
+RemovePackages doesn't seem to affect apexes
+
+Change-Id: I0def0640b3f35344cdb0da075ca577e917025a52
+---
+ apex/Android.bp | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/apex/Android.bp b/apex/Android.bp
+index 3026a4ce01..e5e730fdec 100644
+--- a/apex/Android.bp
++++ b/apex/Android.bp
+@@ -57,7 +57,6 @@ apex {
+     bootclasspath_fragments: ["com.android.btservices-bootclasspath-fragment"],
+     systemserverclasspath_fragments: ["com.android.btservices-systemserverclasspath-fragment"],
+     compat_configs: ["bluetooth-compat-config"],
+-    apps: ["Bluetooth"],
+ 
+     multilib: {
+         first: {
+-- 
+2.39.1
+

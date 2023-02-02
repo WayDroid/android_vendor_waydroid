@@ -1,0 +1,27 @@
+From 4fc56cdc9a9a41ce536771e1dbeba6fe3bbb6d65 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sun, 22 Jan 2023 14:04:37 +0100
+Subject: [PATCH] adb: Disable selinux when root
+
+Change-Id: Ia7c265e9f7bea990281abc5f9615b5f1068a5870
+---
+ daemon/main.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/main.cpp b/daemon/main.cpp
+index 3280ac74..cc0aa2b8 100644
+--- a/daemon/main.cpp
++++ b/daemon/main.cpp
+@@ -157,7 +157,8 @@ static void drop_privileges(int server_port) {
+         // minijail_enter() will abort if any priv-dropping step fails.
+         minijail_enter(jail.get());
+ 
+-        if (root_seclabel != nullptr) {
++        // Disabled in Waydroid
++        if (false /* root_seclabel != nullptr */) {
+             if (selinux_android_setcon(root_seclabel) < 0) {
+                 LOG(FATAL) << "Could not set SELinux context";
+             }
+-- 
+2.39.1
+

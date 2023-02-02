@@ -1,0 +1,25 @@
+From 3efb65d9266546415d2b9f72e8ea4b7b45656df3 Mon Sep 17 00:00:00 2001
+From: Madhushan Nishantha <jlmadushan@gmail.com>
+Date: Sun, 24 Oct 2021 00:07:47 +0200
+Subject: [PATCH] unprivate
+
+Change-Id: I05adf48c4592e71edd73a10da59ad23f61215069
+---
+ include/gatekeeper/gatekeeper_messages.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/gatekeeper/gatekeeper_messages.h b/include/gatekeeper/gatekeeper_messages.h
+index 59f419c..4421bd8 100644
+--- a/include/gatekeeper/gatekeeper_messages.h
++++ b/include/gatekeeper/gatekeeper_messages.h
+@@ -95,7 +95,6 @@ struct SizedBuffer {
+         return nullptr;
+     }
+ 
+-private:
+     UniquePtr<uint8_t[]> buffer;
+     uint32_t length;
+ };
+-- 
+2.39.1
+

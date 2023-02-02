@@ -1,0 +1,31 @@
+From c03bbdb36d67b88d0641d2c1c10e246b50da3f36 Mon Sep 17 00:00:00 2001
+From: Simon Fels <morphis@gravedo.de>
+Date: Thu, 8 Dec 2016 17:28:54 +0100
+Subject: [PATCH 07/29] wm: Include task id in surface name for easier tracking
+
+Change-Id: Ia64c3e8ef8e4514223649417d843d7ef65e2f5ba
+---
+ .../java/com/android/server/wm/WindowStateAnimator.java    | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/wm/WindowStateAnimator.java b/services/core/java/com/android/server/wm/WindowStateAnimator.java
+index f3642480da58..191e66f43eb6 100644
+--- a/services/core/java/com/android/server/wm/WindowStateAnimator.java
++++ b/services/core/java/com/android/server/wm/WindowStateAnimator.java
+@@ -308,7 +308,12 @@ class WindowStateAnimator {
+             final boolean isHwAccelerated = (attrs.flags & FLAG_HARDWARE_ACCELERATED) != 0;
+             final int format = isHwAccelerated ? PixelFormat.TRANSLUCENT : attrs.format;
+ 
+-            mSurfaceController = new WindowSurfaceController(attrs.getTitle().toString(), format,
++            String name = attrs.getTitle().toString();
++            Task task = mWin.getTask();
++            if (task != null) {
++                name = String.format("TID:%d#", task.mTaskId) + name;
++            }
++            mSurfaceController = new WindowSurfaceController(name, format,
+                     flags, this, attrs.type);
+             mSurfaceController.setColorSpaceAgnostic((attrs.privateFlags
+                     & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC) != 0);
+-- 
+2.48.1
+

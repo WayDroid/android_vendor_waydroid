@@ -1,0 +1,94 @@
+From 3b857336fa456e4dbb3b56e798f3c7520ccd56ff Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Sat, 24 Apr 2021 19:58:58 +0700
+Subject: [PATCH 7/8] Always pass useHostHwBinder to modified methods that can
+ accept it
+
+---
+ transport/HidlBinderSupport.cpp | 19 ++++++++++++-------
+ transport/ServiceManagement.cpp |  5 +++--
+ 2 files changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/transport/HidlBinderSupport.cpp b/transport/HidlBinderSupport.cpp
+index 984908e..8adb4f1 100644
+--- a/transport/HidlBinderSupport.cpp
++++ b/transport/HidlBinderSupport.cpp
+@@ -278,12 +278,14 @@ bool doesSupportHostBinder() {
+ static bool gThreadPoolConfigured = false;
+ 
+ void configureBinderRpcThreadpool(size_t maxThreads, bool callerWillJoin) {
+-    status_t ret = ProcessState::self()->setThreadPoolConfiguration(
++    bool useHostHwBinder = false;
++    status_t ret = ProcessState::self(useHostHwBinder)->setThreadPoolConfiguration(
+         maxThreads, callerWillJoin /*callerJoinsPool*/);
+     LOG_ALWAYS_FATAL_IF(ret != OK, "Could not setThreadPoolConfiguration: %d", ret);
+ 
+     if (doesSupportHostBinder()){
+-        status_t ret = ProcessState::self(true)->setThreadPoolConfiguration(
++        useHostHwBinder = true;
++        status_t ret = ProcessState::self(useHostHwBinder)->setThreadPoolConfiguration(
+             maxThreads, callerWillJoin /*callerJoinsPool*/);
+         LOG_ALWAYS_FATAL_IF(ret != OK, "Could not setThreadPoolConfiguration for Host: %d", ret);
+     }
+@@ -294,15 +296,16 @@ void configureBinderRpcThreadpool(size_t maxThreads, bool callerWillJoin) {
+ void joinBinderRpcThreadpool() {
+     LOG_ALWAYS_FATAL_IF(!gThreadPoolConfigured,
+                         "HIDL joinRpcThreadpool without calling configureRpcThreadPool.");
+-    IPCThreadState::self()->joinThreadPool();
++    IPCThreadState::self(false)->joinThreadPool();
+     if (doesSupportHostBinder()){
+-        IPCThreadState::selfForHost()->joinThreadPool();
++        IPCThreadState::self(true)->joinThreadPool();
+     }
+ }
+ 
+ int setupBinderPolling() {
+     int fd;
+-    int err = IPCThreadState::self()->setupPolling(&fd);
++    const bool useHostHwBinder = false;
++    int err = IPCThreadState::self(useHostHwBinder)->setupPolling(&fd);
+ 
+     LOG_ALWAYS_FATAL_IF(err != OK, "Failed to setup binder polling: %d (%s)", err, strerror(err));
+ 
+@@ -310,11 +313,13 @@ int setupBinderPolling() {
+ }
+ 
+ status_t handleBinderPoll() {
+-    return IPCThreadState::self()->handlePolledCommands();
++    const bool useHostHwBinder = false;
++    return IPCThreadState::self(useHostHwBinder)->handlePolledCommands();
+ }
+ 
+ void addPostCommandTask(const std::function<void(void)> task) {
+-    IPCThreadState::self()->addPostCommandTask(task);
++    const bool useHostHwBinder = false;
++    IPCThreadState::self(useHostHwBinder)->addPostCommandTask(task);
+ }
+ 
+ }  // namespace hardware
+diff --git a/transport/ServiceManagement.cpp b/transport/ServiceManagement.cpp
+index 7206779..ed79f33 100644
+--- a/transport/ServiceManagement.cpp
++++ b/transport/ServiceManagement.cpp
+@@ -606,7 +606,8 @@ struct Waiter : IServiceNotification {
+         // that thread, it will block forever because we hung up the one and only
+         // binder thread on a condition variable that can only be notified by an
+         // incoming binder call.
+-        if (IPCThreadState::self()->isOnlyBinderThread()) {
++        const bool useHostHwBinder = false;
++        if (IPCThreadState::self(useHostHwBinder)->isOnlyBinderThread()) {
+             LOG(WARNING) << "Can't efficiently wait for " << mInterfaceName << "/"
+                          << mInstanceName << ", because we are called from "
+                          << "the only binder thread in this process.";
+@@ -776,7 +777,7 @@ sp<::android::hidl::base::V1_0::IBase> getRawServiceInternal(const std::string&
+         if (doesSupportHostBinder())
+         {
+             if (transportRet == Transport::EMPTY) {
+-                sm = defaultServiceManager1_1(/*useHostBinder*/true);
++                sm = defaultServiceManager1_1(/*useHostHwBinder*/true);
+                 if (sm == nullptr) {
+                     ALOGE("getService: defaultServiceManager() of host is null");
+                     return nullptr;
+-- 
+2.39.1
+

@@ -1,0 +1,28 @@
+From 3c7f1893d3392e18eef8d1a06c0e30330d346d4d Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Tue, 19 Oct 2021 13:45:09 +0800
+Subject: [PATCH 3/3] lineage: Disable adb secure
+
+Change-Id: I9f72839a9363b6e829c344c011034c347747cdc8
+---
+ config/common.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index 985e611c..7f4f477b 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -21,8 +21,8 @@ ifdef WITH_ADB_INSECURE
+ # Forcebly disable ADB authentication
+ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.adb.secure=0
+ else
+-# Enable ADB authentication
+-PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.adb.secure=1
++# waydroid: Disable ADB authentication
++PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.adb.secure=0
+ endif
+ 
+ # Disable extra StrictMode features on all non-engineering builds
+-- 
+2.47.0
+

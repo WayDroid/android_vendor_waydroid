@@ -1,0 +1,21 @@
+From 45cddb13519f7e776afbf1b4e8715d5975619f2c Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sun, 13 Oct 2024 18:52:35 +0200
+Subject: [PATCH] Add prebuilt intel_clc to PATH
+
+---
+ path/linux-x86/intel_clc | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 path/linux-x86/intel_clc
+
+diff --git a/path/linux-x86/intel_clc b/path/linux-x86/intel_clc
+new file mode 120000
+index 0000000..a761224
+--- /dev/null
++++ b/path/linux-x86/intel_clc
+@@ -0,0 +1 @@
++../../../intel-clc/intel_clc
+\ No newline at end of file
+-- 
+2.47.0
+

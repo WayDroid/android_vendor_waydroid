@@ -1,0 +1,42 @@
+From 6a5ed6a288928e53baa6610805e997aeb9b53840 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Tue, 8 Feb 2022 21:36:17 +0100
+Subject: [PATCH 07/13] init: Allow setting sys.use_memfd before boot
+
+Change-Id: I24ef1f5cbeb320fcd7bd5ea162562640eda7f95e
+---
+ rootdir/init.rc | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 19c5f8853..345504807 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -1024,11 +1024,6 @@ on post-fs-data
+     # module, delete if not.
+     exec - system system -- /system/bin/tzdatacheck /apex/com.android.tzdata/etc/tz /data/misc/zoneinfo
+ 
+-    # sys.memfd_use set to false by default, which keeps it disabled
+-    # until it is confirmed that apps and vendor processes don't make
+-    # IOCTLs on ashmem fds any more.
+-    setprop sys.use_memfd false
+-
+     # Set fscklog permission
+     chown root system /dev/fscklogs/log
+     chmod 0770 /dev/fscklogs/log
+@@ -1036,6 +1031,12 @@ on post-fs-data
+     # Enable FUSE by default
+     setprop persist.sys.fuse true
+ 
++# sys.memfd_use set to false by default, which keeps it disabled
++# until it is confirmed that apps and vendor processes don't make
++# IOCTLs on ashmem fds any more.
++on post-fs-data && property:sys.use_memfd=""
++    setprop sys.use_memfd false
++
+ # It is recommended to put unnecessary data/ initialization from post-fs-data
+ # to start-zygote in device's init.rc to unblock zygote start.
+ on zygote-start && property:ro.crypto.state=unencrypted
+-- 
+2.48.1
+

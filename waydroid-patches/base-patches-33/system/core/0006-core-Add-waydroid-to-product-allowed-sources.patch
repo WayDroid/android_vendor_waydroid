@@ -1,0 +1,29 @@
+From 6b0f857c01156e53aa53784d0a37ab9b1eaa2246 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Tue, 19 Oct 2021 13:41:30 +0800
+Subject: [PATCH 06/13] core: Add waydroid to product allowed sources
+
+Change-Id: I239c60ca09dbf44ffe9d923c545ffa23b33931c0
+---
+ init/property_service.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index b1ac015cb..d699c4a8b 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -810,9 +810,9 @@ static void property_initialize_ro_product_props() {
+             "brand", "device", "manufacturer", "model", "name",
+     };
+     const char* RO_PRODUCT_PROPS_ALLOWED_SOURCES[] = {
+-            "odm", "product", "system_ext", "system", "vendor",
++            "waydroid", "odm", "product", "system_ext", "system", "vendor",
+     };
+-    const char* RO_PRODUCT_PROPS_DEFAULT_SOURCE_ORDER = "product,odm,vendor,system_ext,system";
++    const char* RO_PRODUCT_PROPS_DEFAULT_SOURCE_ORDER = "waydroid,product,odm,vendor,system_ext,system";
+     const std::string EMPTY = "";
+ 
+     std::string ro_product_props_source_order =
+-- 
+2.48.1
+

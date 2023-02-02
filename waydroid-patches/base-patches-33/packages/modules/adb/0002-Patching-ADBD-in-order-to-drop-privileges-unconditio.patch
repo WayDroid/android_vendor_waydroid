@@ -1,0 +1,50 @@
+From 590c236b59cfa42cd4edf46bdba10d85b73ff150 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=D0=90=D0=B7=D0=B0=D0=BB=D0=B8=D1=8F=20=D0=A1=D0=BC=D0=B0?=
+ =?UTF-8?q?=D1=80=D0=B0=D0=B3=D0=B4=D0=BE=D0=B2=D0=B0?=
+ <charming.flurry@yandex.ru>
+Date: Wed, 26 Jul 2023 15:24:18 +0000
+Subject: [PATCH] Patching ADBD in order to drop privileges unconditionally.
+
+Change-Id: I038d96fe58a81dbbb56013df7010e80ee29b0d82
+---
+ daemon/main.cpp            | 5 +++++
+ daemon/restart_service.cpp | 7 +++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/daemon/main.cpp b/daemon/main.cpp
+index cc0aa2b81..aa368f6df 100644
+--- a/daemon/main.cpp
++++ b/daemon/main.cpp
+@@ -64,6 +64,11 @@
+ static const char* root_seclabel = nullptr;
+ 
+ static bool should_drop_privileges() {
++    // Always dropping privileges in Waydroid because the daemon will interact with unprivileged users
++    if (true) {
++        return true;
++    }
++
+     // The properties that affect `adb root` and `adb unroot` are ro.secure and
+     // ro.debuggable. In this context the names don't make the expected behavior
+     // particularly obvious.
+diff --git a/daemon/restart_service.cpp b/daemon/restart_service.cpp
+index c942c1f23..cbac6fde8 100644
+--- a/daemon/restart_service.cpp
++++ b/daemon/restart_service.cpp
+@@ -34,6 +34,13 @@
+ #include "adb_unique_fd.h"
+ 
+ void restart_root_service(unique_fd fd) {
++    // Running ADBD as root is not safe in Waydroid, since it allows an unprivileged user to get an actual root shell (however, with restrictions enabled by LXC) with no way for admin to stop.
++    // There are other ways to perform privileged tasks, for "waydroid shell" subcommand to Magisk, that require either root or initial privileged setup
++    if (true) {
++        WriteFdExactly(fd.get(), "not available in Waydroid\n");
++        return;
++    }
++
+     if (getuid() == 0) {
+         WriteFdExactly(fd.get(), "adbd is already running as root\n");
+         return;
+-- 
+2.41.0
+

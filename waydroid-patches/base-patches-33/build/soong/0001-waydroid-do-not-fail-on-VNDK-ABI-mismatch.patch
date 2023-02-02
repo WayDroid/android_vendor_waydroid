@@ -1,0 +1,28 @@
+From 04bea83a5789f415d9a2bb812edcae9d3545c793 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Sun, 2 May 2021 02:06:01 +0800
+Subject: [PATCH] (waydroid) do not fail on VNDK ABI mismatch
+
+Change-Id: I439748c1e538aa5414a66799c6720f1775d34d04
+---
+ cc/builder.go | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/cc/builder.go b/cc/builder.go
+index ea06839a9..e33f4703a 100644
+--- a/cc/builder.go
++++ b/cc/builder.go
+@@ -960,9 +960,7 @@ func sourceAbiDiff(ctx android.ModuleContext, inputDump android.Path, referenceD
+ 			"-allow-unreferenced-elf-symbol-changes")
+ 	}
+ 
+-	if exportedHeaderFlags == "" {
+-		extraFlags = append(extraFlags, "-advice-only")
+-	}
++	extraFlags = append(extraFlags, "-advice-only")
+ 
+ 	if isLlndk || isNdk {
+ 		createReferenceDumpFlags = "--llndk"
+-- 
+2.39.1
+

@@ -1,0 +1,58 @@
+From e696141fb11e6a3e1d1b48aa5aa896e6d6d6962c Mon Sep 17 00:00:00 2001
+From: Paulo Sergio Travaglia <pstglia@gmail.com>
+Date: Sun, 30 Oct 2016 21:37:16 -0200
+Subject: [PATCH 3/5] HACK - Avoid crashes on SurfaceFlinger when using
+ software rendering
+
+When using sw rendering, depending user action (pressing HOME button after
+lauching an app, for instance) there's an attempt do map a vaddr that has
+already been mapped. And this is done by the process that created it.
+This triggers a kernel trap and surfaceflinger is destroyed:
+
+=========================================================================
+10-30 18:14:11.474  1096  1645 D gralloc : gralloc_map() succeeded fd=59,
+ off=0, size=1028096, vaddr=0xaac21000
+
+10-30 18:14:11.474  1355  1389 D gralloc : gralloc_map() succeeded fd=202,
+ off=0, size=1028096, vaddr=0x8d0f2000
+
+10-30 18:14:11.475  1096  1096 D gralloc : Registering a buffer in the
+process that created it. This may cause memory ordering problems.
+
+10-30 18:14:11.475  1096  1096 D gralloc : gralloc_map() succeeded
+fd=60, off=0, size=1028096, vaddr=0xaac21000
+
+10-30 18:14:11.574  1095  1095 I ServiceManager: service 'gpu' died
+=========================================================================
+
+In order to avoid this, the patch avoids mapping a buffer when the
+mapping process is the creator process.
+
+This should be threated as a workaround and removed when the real
+root cause is discovered.
+---
+ modules/gralloc/mapper.cpp | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/modules/gralloc/mapper.cpp b/modules/gralloc/mapper.cpp
+index ee3e40e0..7810f093 100644
+--- a/modules/gralloc/mapper.cpp
++++ b/modules/gralloc/mapper.cpp
+@@ -115,9 +115,11 @@ int gralloc_register_buffer(gralloc_module_t const* module,
+     //   problems. Most modern L1 caches fit that description.
+ 
+     private_handle_t* hnd = (private_handle_t*)handle;
+-    ALOGD_IF(hnd->pid == getpid(),
+-            "Registering a buffer in the process that created it. "
+-            "This may cause memory ordering problems.");
++    if (hnd->pid == getpid()) {
++        ALOGD("Avoid registering a buffer in the process that created it. "
++              "This may cause memory ordering problems.");
++        return 1;
++    }
+ 
+     void *vaddr;
+     return gralloc_map(module, handle, &vaddr);
+-- 
+2.43.2
+

@@ -1,0 +1,127 @@
+From 6e5dd0f0fcf65d78013c40dfa252f572f2839ca9 Mon Sep 17 00:00:00 2001
+From: Erfan Abdi <erfangplus@gmail.com>
+Date: Sat, 10 Apr 2021 22:40:12 +0430
+Subject: [PATCH 1/8] ServiceManagement: Use host_hwbinder if available
+
+---
+ transport/HidlBinderSupport.cpp            | 17 ++++++++++++++
+ transport/ServiceManagement.cpp            | 27 ++++++++++++++++++++++
+ transport/include/hidl/HidlBinderSupport.h |  1 +
+ 3 files changed, 45 insertions(+)
+
+diff --git a/transport/HidlBinderSupport.cpp b/transport/HidlBinderSupport.cpp
+index 6e3038c..70b41c4 100644
+--- a/transport/HidlBinderSupport.cpp
++++ b/transport/HidlBinderSupport.cpp
+@@ -271,6 +271,10 @@ sp<IBinder> getOrCreateCachedBinder(::android::hidl::base::V1_0::IBase* ifacePtr
+     return sBnObj;
+ }
+ 
++bool doesSupportHostBinder() {
++    return (access("/dev/host_hwbinder", F_OK|R_OK|W_OK) == 0);
++}
++
+ static bool gThreadPoolConfigured = false;
+ 
+ void configureBinderRpcThreadpool(size_t maxThreads, bool callerWillJoin) {
+@@ -278,6 +282,14 @@ void configureBinderRpcThreadpool(size_t maxThreads, bool callerWillJoin) {
+         maxThreads, callerWillJoin /*callerJoinsPool*/);
+     LOG_ALWAYS_FATAL_IF(ret != OK, "Could not setThreadPoolConfiguration: %d", ret);
+ 
++    if (doesSupportHostBinder()){
++        ProcessState::switchToHostBinder(!ProcessState::isHostBinder());
++        status_t ret = ProcessState::self()->setThreadPoolConfiguration(
++            maxThreads, callerWillJoin /*callerJoinsPool*/);
++        ProcessState::switchToHostBinder(!ProcessState::isHostBinder());
++        LOG_ALWAYS_FATAL_IF(ret != OK, "Could not setThreadPoolConfiguration for Host: %d", ret);
++    }
++
+     gThreadPoolConfigured = true;
+ }
+ 
+@@ -285,6 +297,11 @@ void joinBinderRpcThreadpool() {
+     LOG_ALWAYS_FATAL_IF(!gThreadPoolConfigured,
+                         "HIDL joinRpcThreadpool without calling configureRpcThreadPool.");
+     IPCThreadState::self()->joinThreadPool();
++    if (doesSupportHostBinder()){
++        ProcessState::switchToHostBinder(!ProcessState::isHostBinder());
++        IPCThreadState::self()->joinThreadPool();
++        ProcessState::switchToHostBinder(!ProcessState::isHostBinder());
++    }
+ }
+ 
+ int setupBinderPolling() {
+diff --git a/transport/ServiceManagement.cpp b/transport/ServiceManagement.cpp
+index c638279..f5e5334 100644
+--- a/transport/ServiceManagement.cpp
++++ b/transport/ServiceManagement.cpp
+@@ -278,6 +278,7 @@ static void registerReference(const hidl_string &interfaceName, const hidl_strin
+         return;
+     }
+ 
++    ProcessState::switchToHostBinder(false);
+     sp<IServiceManager1_0> binderizedManager = defaultServiceManager();
+     if (binderizedManager == nullptr) {
+         LOG(WARNING) << "Could not registerReference for "
+@@ -746,6 +747,7 @@ sp<::android::hidl::base::V1_0::IBase> getRawServiceInternal(const std::string&
+     if (kIsRecovery) {
+         transport = Transport::PASSTHROUGH;
+     } else {
++        ProcessState::switchToHostBinder(false);
+         sm = defaultServiceManager1_1();
+         if (sm == nullptr) {
+             ALOGE("getService: defaultServiceManager() is null");
+@@ -759,6 +761,30 @@ sp<::android::hidl::base::V1_0::IBase> getRawServiceInternal(const std::string&
+                   transportRet.description().c_str());
+             return nullptr;
+         }
++        if (doesSupportHostBinder())
++        {
++            if (transportRet == Transport::EMPTY) {
++                ProcessState::switchToHostBinder(true);
++                sm = defaultServiceManager1_1();
++                if (sm == nullptr) {
++                    ALOGE("getService: defaultServiceManager() of host is null");
++                    ProcessState::switchToHostBinder(false);
++                    return nullptr;
++                }
++                transportRet = sm->getTransport(descriptor, instance);
++                if (!transportRet.isOk()) {
++                    ALOGE("getService: defaultServiceManager()->getTransport of host returns %s",
++                        transportRet.description().c_str());
++                    ProcessState::switchToHostBinder(false);
++                    return nullptr;
++                }
++                if (transportRet == Transport::EMPTY) {
++                    ProcessState::switchToHostBinder(false);
++                    sm = defaultServiceManager1_1();
++                }
++            }
++        }
++
+         transport = transportRet;
+     }
+ 
+@@ -838,6 +864,7 @@ status_t registerAsServiceInternal(const sp<IBase>& service, const std::string&
+         return UNEXPECTED_NULL;
+     }
+ 
++    ProcessState::switchToHostBinder(false);
+     sp<IServiceManager1_2> sm = defaultServiceManager1_2();
+     if (sm == nullptr) {
+         return INVALID_OPERATION;
+diff --git a/transport/include/hidl/HidlBinderSupport.h b/transport/include/hidl/HidlBinderSupport.h
+index f0981ff..b4135f4 100644
+--- a/transport/include/hidl/HidlBinderSupport.h
++++ b/transport/include/hidl/HidlBinderSupport.h
+@@ -222,6 +222,7 @@ sp<IType> fromBinder(const sp<IBinder>& binderIface) {
+     }
+ }
+ 
++bool doesSupportHostBinder();
+ void configureBinderRpcThreadpool(size_t maxThreads, bool callerWillJoin);
+ void joinBinderRpcThreadpool();
+ int setupBinderPolling();
+-- 
+2.39.1
+

@@ -1,0 +1,64 @@
+From 6dff76c5eba907ea7bc526cd516e99bbae6e0356 Mon Sep 17 00:00:00 2001
+From: hmtheboy154 <buingoc67@gmail.com>
+Date: Thu, 3 Nov 2022 00:11:17 -0400
+Subject: [PATCH 26/27] Allow sysinfo syscall for screen recording
+
+11-02 15:32:10.124  3822  3897 E android.hardware.media.omx@1.0-service: libminijail[3822]: blocked syscall: sysinfo
+---
+ services/mediacodec/seccomp_policy/mediacodec-x86.policy      | 1 +
+ services/mediacodec/seccomp_policy/mediacodec-x86_64.policy   | 1 +
+ services/mediacodec/seccomp_policy/mediaswcodec-x86.policy    | 1 +
+ services/mediacodec/seccomp_policy/mediaswcodec-x86_64.policy | 1 +
+ 4 files changed, 4 insertions(+)
+
+diff --git a/services/mediacodec/seccomp_policy/mediacodec-x86.policy b/services/mediacodec/seccomp_policy/mediacodec-x86.policy
+index 96fc6dfac7..b4ae054410 100644
+--- a/services/mediacodec/seccomp_policy/mediacodec-x86.policy
++++ b/services/mediacodec/seccomp_policy/mediacodec-x86.policy
+@@ -72,6 +72,7 @@ gettid: 1
+ # Required by mesa3d
+ kcmp: 1
+ sched_getaffinity: 1
++sysinfo: 1
+ 
+ @include /system/etc/seccomp_policy/crash_dump.x86.policy
+ @include /system/etc/seccomp_policy/code_coverage.x86.policy
+diff --git a/services/mediacodec/seccomp_policy/mediacodec-x86_64.policy b/services/mediacodec/seccomp_policy/mediacodec-x86_64.policy
+index 96fc6dfac7..b4ae054410 100644
+--- a/services/mediacodec/seccomp_policy/mediacodec-x86_64.policy
++++ b/services/mediacodec/seccomp_policy/mediacodec-x86_64.policy
+@@ -72,6 +72,7 @@ gettid: 1
+ # Required by mesa3d
+ kcmp: 1
+ sched_getaffinity: 1
++sysinfo: 1
+ 
+ @include /system/etc/seccomp_policy/crash_dump.x86.policy
+ @include /system/etc/seccomp_policy/code_coverage.x86.policy
+diff --git a/services/mediacodec/seccomp_policy/mediaswcodec-x86.policy b/services/mediacodec/seccomp_policy/mediaswcodec-x86.policy
+index d4db015d9c..9de61db4a7 100644
+--- a/services/mediacodec/seccomp_policy/mediaswcodec-x86.policy
++++ b/services/mediacodec/seccomp_policy/mediaswcodec-x86.policy
+@@ -72,6 +72,7 @@ gettid: 1
+ # Required by mesa3d
+ kcmp: 1
+ sched_getaffinity: 1
++sysinfo: 1
+ 
+ @include /apex/com.android.media.swcodec/etc/seccomp_policy/crash_dump.x86.policy
+ @include /apex/com.android.media.swcodec/etc/seccomp_policy/code_coverage.x86.policy
+diff --git a/services/mediacodec/seccomp_policy/mediaswcodec-x86_64.policy b/services/mediacodec/seccomp_policy/mediaswcodec-x86_64.policy
+index de23fcab21..61e9eb3d12 100644
+--- a/services/mediacodec/seccomp_policy/mediaswcodec-x86_64.policy
++++ b/services/mediacodec/seccomp_policy/mediaswcodec-x86_64.policy
+@@ -72,6 +72,7 @@ gettid: 1
+ # Required by mesa3d
+ kcmp: 1
+ sched_getaffinity: 1
++sysinfo: 1
+ 
+ @include /apex/com.android.media.swcodec/etc/seccomp_policy/crash_dump.x86_64.policy
+ @include /apex/com.android.media.swcodec/etc/seccomp_policy/code_coverage.x86_64.policy
+-- 
+2.40.0
+

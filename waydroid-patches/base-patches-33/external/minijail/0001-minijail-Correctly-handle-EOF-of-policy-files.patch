@@ -1,0 +1,37 @@
+From 2b4dd28e1dcc04e5155ad6dfdcf5d18d08c09334 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Sun, 15 May 2022 18:53:51 +0200
+Subject: [PATCH] minijail: Correctly handle EOF of policy files
+
+It is unclear what value of errno should be set when getline()
+fails due to EOF. I believe most implementations don't set any value
+and return -1. Specifically bionic does that:
+https://android.googlesource.com/platform/bionic/+/refs/heads/master/libc/upstream-openbsd/lib/libc/stdio/getdelim.c#124
+
+That means we might be reading a ~random~ errno after getline().
+Instead, more reliably use feof(FILE*) to check whether
+we hit an error or just finished reading.
+
+Change-Id: I4cb24a7ff8d2705c06d856e0297a6a3238707d9c
+---
+ syscall_filter.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/syscall_filter.c b/syscall_filter.c
+index de5441c..2c07499 100644
+--- a/syscall_filter.c
++++ b/syscall_filter.c
+@@ -742,8 +742,8 @@ int compile_file(const char *filename, FILE *policy_file,
+ 		}
+ 		/* Reuse |line| in the next getline() call. */
+ 	}
+-	/* getline(3) returned -1. This can mean EOF or the below errors. */
+-	if (errno == EINVAL || errno == ENOMEM) {
++	/* getline(3) returned -1. This can mean EOF or an error. */
++	if (!feof(policy_file)) {
+ 		if (*arg_blocks) {
+ 			free_block_list(*arg_blocks);
+ 			*arg_blocks = NULL;
+-- 
+2.39.1
+

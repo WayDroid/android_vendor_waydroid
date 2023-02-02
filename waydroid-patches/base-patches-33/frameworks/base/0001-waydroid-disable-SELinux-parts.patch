@@ -1,0 +1,84 @@
+From 83e628bd0be9ec787c0323577b858deb132a471c Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Sun, 15 Nov 2020 00:24:05 +0700
+Subject: [PATCH 01/29] (waydroid) disable SELinux parts
+
+Change-Id: I1bee5fb7f9f879e3bc9dc0c69cfb004fde8a320a
+---
+ core/jni/com_android_internal_os_Zygote.cpp         | 13 ++++++++-----
+ .../core/java/com/android/server/pm/Settings.java   |  6 +++---
+ 2 files changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index c8b85c314aca..000de4ac6963 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -1935,12 +1935,13 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+     __android_log_close();
+     AStatsSocket_close();
+ 
+-    const char* se_info_ptr = se_info.has_value() ? se_info.value().c_str() : nullptr;
++    // Disabled for Waydroid
++    /*const char* se_info_ptr = se_info.has_value() ? se_info.value().c_str() : nullptr;
+ 
+     if (selinux_android_setcontext(uid, is_system_server, se_info_ptr, nice_name_ptr) == -1) {
+         fail_fn(CREATE_ERROR("selinux_android_setcontext(%d, %d, \"%s\", \"%s\") failed", uid,
+                              is_system_server, se_info_ptr, nice_name_ptr));
+-    }
++    }*/
+ 
+     // Make it easier to debug audit logs by setting the main thread's name to the
+     // nice name rather than "app_process".
+@@ -1960,10 +1961,11 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids,
+         }
+ 
+         // TODO(b/117874058): Remove hardcoded label here.
+-        static const char* kSystemServerLabel = "u:r:system_server:s0";
++        // Disabled for Waydroid
++        /*static const char* kSystemServerLabel = "u:r:system_server:s0";
+         if (selinux_android_setcon(kSystemServerLabel) != 0) {
+             fail_fn(CREATE_ERROR("selinux_android_setcon(%s)", kSystemServerLabel));
+-        }
++        }*/
+     }
+ 
+     if (is_child_zygote) {
+@@ -2589,7 +2591,8 @@ static void com_android_internal_os_Zygote_nativeInitNativeState(JNIEnv* env, jc
+   // the value before zygote forks.
+   gIsSecurityEnforced = security_getenforce();
+ 
+-  selinux_android_seapp_context_init();
++  // Disabled for Waydroid
++  /*selinux_android_seapp_context_init();*/
+ 
+   /*
+    * Storage Initialization
+diff --git a/services/core/java/com/android/server/pm/Settings.java b/services/core/java/com/android/server/pm/Settings.java
+index a9b624653b92..660ddbd42fe7 100644
+--- a/services/core/java/com/android/server/pm/Settings.java
++++ b/services/core/java/com/android/server/pm/Settings.java
+@@ -2687,18 +2687,18 @@ public final class Settings implements Watchable, Snappable {
+     void writePackageListLPr(int creatingUserId) {
+         String filename = mPackageListFilename.getAbsolutePath();
+         String ctx = SELinux.fileSelabelLookup(filename);
+-        if (ctx == null) {
++        if (SELinux.isSELinuxEnabled() && ctx == null) {
+             Slog.wtf(TAG, "Failed to get SELinux context for " +
+                 mPackageListFilename.getAbsolutePath());
+         }
+ 
+-        if (!SELinux.setFSCreateContext(ctx)) {
++        if (SELinux.isSELinuxEnabled() && !SELinux.setFSCreateContext(ctx)) {
+             Slog.wtf(TAG, "Failed to set packages.list SELinux context");
+         }
+         try {
+             writePackageListLPrInternal(creatingUserId);
+         } finally {
+-            SELinux.setFSCreateContext(null);
++            if (SELinux.isSELinuxEnabled()) SELinux.setFSCreateContext(null);
+         }
+     }
+ 
+-- 
+2.48.1
+
