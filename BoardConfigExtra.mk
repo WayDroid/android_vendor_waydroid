@@ -20,5 +20,5 @@ EXTRA_VENDOR_PATH := vendor/extra
 BOARD_ROOT_EXTRA_FOLDERS := odm_extra vendor_extra mnt_extra run var tmp
 
 # Sepolicy
-BOARD_PLAT_PRIVATE_SEPOLICY_DIR += $(EXTRA_VENDOR_PATH)/sepolicy/private
+SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(EXTRA_VENDOR_PATH)/sepolicy/private
 SELINUX_IGNORE_NEVERALLOWS := true
