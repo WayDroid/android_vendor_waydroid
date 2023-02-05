@@ -33,6 +33,8 @@ service vendor.audio-hal /vendor/bin/hw/android.hardware.audio.service
     # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
     group audioserver audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct wakelock context_hub
     capabilities BLOCK_SUSPEND
+    # setting RLIMIT_RTPRIO allows binder RT priority inheritance
+    rlimit rtprio 10 10
     ioprio rt 4
     task_profiles ProcessCapacityHigh HighPerformance
     onrestart restart audioserver
@@ -44,7 +46,7 @@ service vendor.hwcomposer-2-1 /vendor/bin/hw/android.hardware.graphics.composer@
     group system graphics drmrpc
     capabilities SYS_NICE
     onrestart restart surfaceflinger
-    writepid /dev/cpuset/system-background/tasks
+    task_profiles ServiceCapacityLow
 
 service vendor.camera-provider-2-4 /vendor/bin/hw/android.hardware.camera.provider@2.4-service
     override
@@ -54,8 +56,7 @@ service vendor.camera-provider-2-4 /vendor/bin/hw/android.hardware.camera.provid
     group audio camera input drmrpc
     ioprio rt 4
     capabilities SYS_NICE
-    oneshot
-    writepid /dev/cpuset/camera-daemon/tasks /dev/stune/top-app/tasks
+    task_profiles CameraServiceCapacity MaxPerformance
 
 on property:ro.vndk.version=28
     mount none /dev/null /vendor_extra/lib/libmedia_codecserviceregistrant.so ro bind
