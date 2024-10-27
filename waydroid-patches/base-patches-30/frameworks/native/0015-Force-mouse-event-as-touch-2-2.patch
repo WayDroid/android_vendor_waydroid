@@ -1,0 +1,151 @@
+From 6059542937bbe83ce8e6090bbe2bbb10d1bda9e6 Mon Sep 17 00:00:00 2001
+From: YogSottot <7411302+YogSottot@users.noreply.github.com>
+Date: Sat, 25 May 2024 10:09:02 +0300
+Subject: [PATCH] Force mouse event as touch [2/2]
+
+Change-Id: Id15222e62490bb1ae863fc2c7e96e4c5e5f40ce7
+---
+ services/inputflinger/InputReaderBase.cpp     |  3 +++
+ .../dispatcher/InputDispatcher.cpp            |  3 +--
+ .../inputflinger/include/InputReaderBase.h    |  7 ++++++
+ services/inputflinger/reader/InputReader.cpp  |  1 +
+ .../reader/mapper/CursorInputMapper.cpp       | 23 +++++++++++++++----
+ 5 files changed, 31 insertions(+), 6 deletions(-)
+
+diff --git a/services/inputflinger/InputReaderBase.cpp b/services/inputflinger/InputReaderBase.cpp
+index b2dadf846..a5b1e00b3 100644
+--- a/services/inputflinger/InputReaderBase.cpp
++++ b/services/inputflinger/InputReaderBase.cpp
+@@ -52,6 +52,9 @@ std::string InputReaderConfiguration::changesToString(uint32_t changes) {
+     if (changes & CHANGE_SHOW_TOUCHES) {
+         result += "SHOW_TOUCHES | ";
+     }
++    if (changes & CHANGE_FORCE_MOUSE_AS_TOUCH) {
++        result += "FORCE_MOUSE_AS_TOUCH | ";
++    }
+     if (changes & CHANGE_KEYBOARD_LAYOUTS) {
+         result += "KEYBOARD_LAYOUTS | ";
+     }
+diff --git a/services/inputflinger/dispatcher/InputDispatcher.cpp b/services/inputflinger/dispatcher/InputDispatcher.cpp
+index b93c3b51f..b6ca4579d 100644
+--- a/services/inputflinger/dispatcher/InputDispatcher.cpp
++++ b/services/inputflinger/dispatcher/InputDispatcher.cpp
+@@ -1601,8 +1601,7 @@ int32_t InputDispatcher::findTouchedWindowTargetsLocked(nsecs_t currentTime,
+ 
+     bool isSplit = tempTouchState.split;
+     bool switchedDevice = tempTouchState.deviceId >= 0 && tempTouchState.displayId >= 0 &&
+-            (tempTouchState.deviceId != entry.deviceId || tempTouchState.source != entry.source ||
+-             tempTouchState.displayId != displayId);
++            (tempTouchState.deviceId != entry.deviceId || tempTouchState.displayId != displayId);
+     bool isHoverAction = (maskedAction == AMOTION_EVENT_ACTION_HOVER_MOVE ||
+                           maskedAction == AMOTION_EVENT_ACTION_HOVER_ENTER ||
+                           maskedAction == AMOTION_EVENT_ACTION_HOVER_EXIT);
+diff --git a/services/inputflinger/include/InputReaderBase.h b/services/inputflinger/include/InputReaderBase.h
+index 879d26de3..835a239cd 100644
+--- a/services/inputflinger/include/InputReaderBase.h
++++ b/services/inputflinger/include/InputReaderBase.h
+@@ -157,6 +157,9 @@ struct InputReaderConfiguration {
+ 
+         // All devices must be reopened.
+         CHANGE_MUST_REOPEN = 1 << 31,
++
++        // Force mouse as touch setting changed.
++        CHANGE_FORCE_MOUSE_AS_TOUCH = 1 << 90,
+     };
+ 
+     // Gets the amount of time to disable virtual keys after the screen is touched
+@@ -183,6 +186,9 @@ struct InputReaderConfiguration {
+ 
+     // True if pointer gestures are enabled.
+     bool pointerGesturesEnabled;
++
++    // True if pointer touch emulation is enabled.
++    bool forceMouseAsTouch;
+ 
+     // Quiet time between certain pointer gesture transitions.
+     // Time to allow for all fingers or buttons to settle into a stable state before
+@@ -264,6 +270,7 @@ struct InputReaderConfiguration {
+             pointerVelocityControlParameters(1.0f, 500.0f, 3000.0f, 3.0f),
+             wheelVelocityControlParameters(1.0f, 15.0f, 50.0f, 4.0f),
+             pointerGesturesEnabled(true),
++            forceMouseAsTouch(false),
+             pointerGestureQuietInterval(100 * 1000000LL), // 100 ms
+             pointerGestureDragMinSwitchSpeed(50), // 50 pixels per second
+             pointerGestureTapInterval(150 * 1000000LL), // 150 ms
+diff --git a/services/inputflinger/reader/InputReader.cpp b/services/inputflinger/reader/InputReader.cpp
+index fc063f97a..1d64f4f41 100644
+--- a/services/inputflinger/reader/InputReader.cpp
++++ b/services/inputflinger/reader/InputReader.cpp
+@@ -680,6 +680,7 @@ void InputReader::dump(std::string& dump) {
+                          mConfig.wheelVelocityControlParameters.highThreshold,
+                          mConfig.wheelVelocityControlParameters.acceleration);
+ 
++    dump += StringPrintf(INDENT2 "PointerTouchEmulation: %s\n", toString(mConfig.forceMouseAsTouch));
+     dump += StringPrintf(INDENT2 "PointerGesture:\n");
+     dump += StringPrintf(INDENT3 "Enabled: %s\n", toString(mConfig.pointerGesturesEnabled));
+     dump += StringPrintf(INDENT3 "QuietInterval: %0.1fms\n",
+diff --git a/services/inputflinger/reader/mapper/CursorInputMapper.cpp b/services/inputflinger/reader/mapper/CursorInputMapper.cpp
+index 6f9fb1b5c..f3f0d81c7 100644
+--- a/services/inputflinger/reader/mapper/CursorInputMapper.cpp
++++ b/services/inputflinger/reader/mapper/CursorInputMapper.cpp
+@@ -159,7 +159,11 @@ void CursorInputMapper::configure(nsecs_t when, const InputReaderConfiguration*
+                 mParameters.mode = Parameters::MODE_POINTER;
+                 [[fallthrough]];
+             case Parameters::MODE_POINTER:
+-                mSource = AINPUT_SOURCE_MOUSE;
++                if (config->forceMouseAsTouch) {
++                    mSource = AINPUT_SOURCE_TOUCHSCREEN;
++                } else {
++                    mSource = AINPUT_SOURCE_MOUSE;
++                }
+                 mXPrecision = 1.0f;
+                 mYPrecision = 1.0f;
+                 mXScale = 1.0f;
+@@ -210,6 +214,17 @@ void CursorInputMapper::configure(nsecs_t when, const InputReaderConfiguration*
+         mWheelXVelocityControl.setParameters(config->wheelVelocityControlParameters);
+         mWheelYVelocityControl.setParameters(config->wheelVelocityControlParameters);
+     }
++
++    if (!changes || (changes & InputReaderConfiguration::CHANGE_FORCE_MOUSE_AS_TOUCH)) {
++        if (mParameters.mode == Parameters::MODE_POINTER_RELATIVE) {
++            // Disable touch emulation for the pointer when Pointer Capture is enabled.
++            mSource = AINPUT_SOURCE_MOUSE_RELATIVE;
++        } else if (config->forceMouseAsTouch) {
++            mSource = AINPUT_SOURCE_TOUCHSCREEN;
++        } else {
++            mSource = AINPUT_SOURCE_MOUSE;
++        }
++    }
+ 
+     if (!changes || (changes & InputReaderConfiguration::CHANGE_DISPLAY_INFO)) {
+         mOrientation = DISPLAY_ORIENTATION_0;
+@@ -348,7 +363,7 @@ void CursorInputMapper::sync(nsecs_t when) {
+     int32_t displayId;
+     float xCursorPosition = AMOTION_EVENT_INVALID_CURSOR_POSITION;
+     float yCursorPosition = AMOTION_EVENT_INVALID_CURSOR_POSITION;
+-    if (mSource == AINPUT_SOURCE_MOUSE) {
++    if (mSource == AINPUT_SOURCE_MOUSE || mSource == AINPUT_SOURCE_TOUCHSCREEN) {
+         if (moved || scrolled || buttonsChanged) {
+             mPointerController->setPresentation(PointerControllerInterface::PRESENTATION_POINTER);
+ 
+@@ -403,7 +418,7 @@ void CursorInputMapper::sync(nsecs_t when) {
+         int32_t motionEventAction;
+         if (downChanged) {
+             motionEventAction = down ? AMOTION_EVENT_ACTION_DOWN : AMOTION_EVENT_ACTION_UP;
+-        } else if (down || (mSource != AINPUT_SOURCE_MOUSE)) {
++        } else if (down || (mSource != AINPUT_SOURCE_MOUSE && mSource != AINPUT_SOURCE_TOUCHSCREEN)) {
+             motionEventAction = AMOTION_EVENT_ACTION_MOVE;
+         } else {
+             motionEventAction = AMOTION_EVENT_ACTION_HOVER_MOVE;
+@@ -454,7 +469,7 @@ void CursorInputMapper::sync(nsecs_t when) {
+         ALOG_ASSERT(buttonState == currentButtonState);
+ 
+         // Send hover move after UP to tell the application that the mouse is hovering now.
+-        if (motionEventAction == AMOTION_EVENT_ACTION_UP && (mSource == AINPUT_SOURCE_MOUSE)) {
++        if (motionEventAction == AMOTION_EVENT_ACTION_UP && (mSource == AINPUT_SOURCE_MOUSE || mSource == AINPUT_SOURCE_TOUCHSCREEN)) {
+             NotifyMotionArgs hoverArgs(getContext()->getNextId(), when, getDeviceId(), mSource,
+                                        displayId, policyFlags, AMOTION_EVENT_ACTION_HOVER_MOVE, 0,
+                                        0, metaState, currentButtonState, MotionClassification::NONE,
+-- 
+2.25.1
+
