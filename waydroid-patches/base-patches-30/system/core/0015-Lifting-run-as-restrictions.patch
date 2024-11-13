@@ -1,0 +1,46 @@
+From 70bc3c24cf4ebdf0fe125aa3529bc34b3c97c6b8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=D0=90=D0=B7=D0=B0=D0=BB=D0=B8=D1=8F=20=D0=A1=D0=BC=D0=B0?=
+ =?UTF-8?q?=D1=80=D0=B0=D0=B3=D0=B4=D0=BE=D0=B2=D0=B0?=
+ <charming.flurry@yandex.ru>
+Date: Wed, 26 Jul 2023 15:29:43 +0000
+Subject: [PATCH] Patching run-as in order to ignore that the package is a
+ system app or is not debuggable.
+
+Change-Id: I521f50aded5ed419680e5f8e7c735c8feea4a20d
+---
+ run-as/run-as.cpp | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/run-as/run-as.cpp b/run-as/run-as.cpp
+index 432c434b4..811d08645 100644
+--- a/run-as/run-as.cpp
++++ b/run-as/run-as.cpp
+@@ -226,10 +226,10 @@ int main(int argc, char* argv[]) {
+     error(1, 0, "package not an application: %s", pkgname);
+   }
+ 
+-  // Reject any non-debuggable package.
+-  if (!info.debuggable) {
+-    error(1, 0, "package not debuggable: %s", pkgname);
+-  }
++  // Reject any non-debuggable package. -- disabled (doesn't matter)
++//  if (!info.debuggable) {
++//    error(1, 0, "package not debuggable: %s", pkgname);
++//  }
+ 
+   // Check that the data directory path is valid.
+   check_data_path(pkgname, info.data_dir, userAppId);
+@@ -246,9 +246,7 @@ int main(int argc, char* argv[]) {
+   minijail_enter(j.get());
+ 
+   std::string seinfo = std::string(info.seinfo) + ":fromRunAs";
+-  if (selinux_android_setcontext(uid, 0, seinfo.c_str(), pkgname) < 0) {
+-    error(1, errno, "couldn't set SELinux security context");
+-  }
++  selinux_android_setcontext(uid, 0, seinfo.c_str(), pkgname);
+ 
+   // cd into the data directory, and set $HOME correspondingly.
+   if (TEMP_FAILURE_RETRY(chdir(info.data_dir)) == -1) {
+-- 
+2.39.2
+
