@@ -69,6 +69,7 @@ apply_patch() {
       echo -e ${reset}""${reset} 
       cd $top_dir
       project_revision=`repo info $current_project | grep 'Current revision: ' | sed 's/Current revision: //'`
+      project_log=`git log --max-count=1000 --pretty="format:%aD, %s" $project_revision..`
     fi
     previous_project=$current_project
 
@@ -82,7 +83,7 @@ apply_patch() {
     cd $top_dir/$current_project
     a=`grep "Date: " $pd/$i | sed -e "s/Date: //"`
     b=`grep "Subject: " $pd/$i | sed -e "s/Subject: //" | sed -e "s/^\[PATCH[^]]*\] //"`
-    c=`git log --pretty="format:%aD, %s" $project_revision.. | grep -F "$a, $b"`
+    c=`grep -F "$a, $b" <<< "$project_log"`
 
     if [[ "$c" == "" ]] ; then
       git am -3 $pd/$i >& /dev/null
