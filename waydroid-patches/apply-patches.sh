@@ -68,7 +68,7 @@ apply_patch() {
       echo -e ${ltblue}"Project $current_project"${reset}
       echo -e ${reset}""${reset} 
       cd $top_dir
-      project_revision=`repo info $current_project | grep 'Current revision: ' | sed 's/Current revision: //'`
+      project_revision=`repo --color=never info $current_project | grep 'Current revision: ' | sed 's/Current revision: //'`
       project_log=`git -C $current_project log --max-count=1000 --pretty="format:%aD, %s" $project_revision..`
     fi
     previous_project=$current_project
