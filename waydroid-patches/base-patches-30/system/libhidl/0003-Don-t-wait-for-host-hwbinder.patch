@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Wed, 14 Apr 2021 11:25:37 +0430
-Subject: [PATCH] =?UTF-8?q?Don=E2=80=99t=20wait=20for=20host=20hwbinder?=
+Subject: [PATCH] Don't wait for host hwbinder
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
