@@ -33,4 +33,10 @@
   <!-- VNDK -->
   <project path="prebuilts/vndk/v29" name="WayDroid/android_prebuilts_vndk_v29" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/lineage-18.1" />
 
+  <!-- CalyxOS MicroG -->
+  <project path="prebuilts/calyx/microg" name="CalyxOS/platform_prebuilts_calyx_microg" sync-s="true" remote="gitlab" revision="android11-qpr1" />
+
+  <!-- AG FOSS apps -->
+  <project path="vendor/foss" name="android-generic/vendor_foss" sync-s="true" remote="ghub" revision="hmchoice" />
+  
 </manifest>
