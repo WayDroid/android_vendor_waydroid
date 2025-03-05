@@ -28,6 +28,7 @@
   <project path="prebuilts/intel-clc" name="WayDroid/android_prebuilts_intel-clc" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/main" />
 
   <!-- VNDK -->
+  <project path="prebuilts/vndk/v28" name="WayDroid/android_prebuilts_vndk_v28" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/lineage-20" />
   <project path="prebuilts/vndk/v29" name="WayDroid/android_prebuilts_vndk_v29" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/lineage-20" />
   <project path="prebuilts/vndk/v30" name="WayDroid/android_prebuilts_vndk_v30" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/lineage-20" />
 
