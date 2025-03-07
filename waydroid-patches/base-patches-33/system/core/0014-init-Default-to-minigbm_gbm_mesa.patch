@@ -1,0 +1,30 @@
+From a652563e5e52be5ee03cf2e98f3a401aeb8b2508 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <ales.astone@gmail.com>
+Date: Fri, 7 Mar 2025 23:39:54 +0100
+Subject: [PATCH] init: Default to minigbm_gbm_mesa
+
+Change-Id: I708856bfba0797f20e442af5f0f62b066dbc0604
+---
+ init/property_service.cpp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index fcd35f849..f3c49b18f 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -1132,6 +1132,12 @@ void PropertyLoadBootDefaults() {
+             properties["ro.hardware.egl"] = "angle";
+             properties["ro.hardware.vulkan"] = "pastel";
+         }
++
++        if (properties["ro.hardware.gralloc"] == "gbm" &&
++            properties["gralloc.gbm.legacy"] != "true")
++        {
++            properties["ro.hardware.gralloc"] = "minigbm_gbm_mesa";
++        }
+     }
+ 
+     if (access(kDebugRamdiskProp, R_OK) == 0) {
+-- 
+2.48.1
+
