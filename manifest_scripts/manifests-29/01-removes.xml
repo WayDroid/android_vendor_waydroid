@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
+  <!-- repohooks tracks the master branch and it broke on older soong -->
+  <remove-project name="platform/tools/repohooks" />
+
   <!-- Remove replaced Projects -->
   <remove-project name="platform/external/libdrm" />
   <remove-project name="platform/external/mesa3d" />
