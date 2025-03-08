@@ -1,7 +1,7 @@
-From 6dff76c5eba907ea7bc526cd516e99bbae6e0356 Mon Sep 17 00:00:00 2001
+From 1402f70c3bf5522d81284d4164b9fbf8812102a1 Mon Sep 17 00:00:00 2001
 From: hmtheboy154 <buingoc67@gmail.com>
 Date: Thu, 3 Nov 2022 00:11:17 -0400
-Subject: [PATCH 26/27] Allow sysinfo syscall for screen recording
+Subject: [PATCH 19/20] Allow sysinfo syscall for screen recording
 
 11-02 15:32:10.124  3822  3897 E android.hardware.media.omx@1.0-service: libminijail[3822]: blocked syscall: sysinfo
 ---
@@ -60,5 +60,5 @@ index de23fcab21..61e9eb3d12 100644
  @include /apex/com.android.media.swcodec/etc/seccomp_policy/crash_dump.x86_64.policy
  @include /apex/com.android.media.swcodec/etc/seccomp_policy/code_coverage.x86_64.policy
 -- 
-2.40.0
+2.48.1
 

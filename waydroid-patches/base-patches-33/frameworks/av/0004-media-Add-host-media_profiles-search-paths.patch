@@ -1,7 +1,7 @@
-From b2f732de6bcf4e65857f24f54554a61cd8562446 Mon Sep 17 00:00:00 2001
+From ff22e5e654236eb0203a07aac36f63d09fd5014b Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Fri, 21 May 2021 00:59:04 +0430
-Subject: [PATCH 04/27] media: Add host media_profiles search paths
+Subject: [PATCH 04/20] media: Add host media_profiles search paths
 
 ---
  media/libmedia/MediaProfiles.cpp | 4 +++-
@@ -24,5 +24,5 @@ index 85768bda1f..03dcb87556 100644
                  "vendor/etc/",
                  "system/etc/",
 -- 
-2.40.0
+2.48.1
 

@@ -1,7 +1,7 @@
-From 5647ed691954fb3df2a29200ae78262afff460fc Mon Sep 17 00:00:00 2001
+From dcccea680f147520c182129576935a4e9b9ba84d Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Thu, 20 May 2021 22:41:15 +0430
-Subject: [PATCH 06/27] codec2: Fix media on older vendors
+Subject: [PATCH 06/20] codec2: Fix media on older vendors
 
 ---
  media/codec2/hidl/client/client.cpp | 26 ++++++++++++++++++++++----
@@ -68,5 +68,5 @@ index 0acf7d726c..a5b5d0ad89 100644
                      [&defaultNames, &vendorNames, &otherNames](
                              hidl_vec<hidl_string> const& instanceNames) {
 -- 
-2.40.0
+2.48.1
 

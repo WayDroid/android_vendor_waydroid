@@ -1,7 +1,7 @@
-From 053b08faf6b7e23f9e22cb6ac4c3e104a13968e9 Mon Sep 17 00:00:00 2001
+From 76afafb5924c0aa852012fc0091ea36736453e33 Mon Sep 17 00:00:00 2001
 From: Robert Crabtree <robertx.l.crabtree@intel.com>
 Date: Wed, 25 Jul 2012 17:53:12 -0700
-Subject: [PATCH 08/27] SW encode: Fix output buffer size
+Subject: [PATCH 08/20] SW encode: Fix output buffer size
 
 The output buffer size needs to be updated if the resolution is updated.
 The output buffer was configured for QCIF resolution when the actual
@@ -52,5 +52,5 @@ index d75acdabf8..11e563cdc2 100644
              return SimpleSoftOMXComponent::internalGetParameter(index, param);
      }
 -- 
-2.40.0
+2.48.1
 

@@ -19,11 +19,6 @@
   <project path="external/llvm-project" name="WayDroid/android_external_llvm-project" remote="ghub" revision="refs/heads/lineage-18.1"/>
   <project path="external/minigbm" name="WayDroid/android_external_minigbm" remote="ghub" revision="refs/heads/lineage-18.1"/>
 
-  <!-- Media -->
-  <project path="external/ffmpeg" name="WayDroid/android_external_ffmpeg" remote="ghub" revision="refs/heads/lineage-18.1" />
-  <project path="external/stagefright-plugins" name="WayDroid/android_external_stagefright-plugins" remote="ghub" revision="refs/heads/lineage-18.1" />
-  <project path="hardware/intel/common/libva" name="WayDroid/android_hardware_intel_common_libva" remote="ghub" revision="refs/heads/lineage-18.1" />
-
   <!-- Build -->
   <project path="prebuilts/intel-clc" name="WayDroid/android_prebuilts_intel-clc" groups="pdk" clone-depth="1" remote="ghub" revision="refs/heads/main" />
 

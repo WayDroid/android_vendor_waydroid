@@ -1,7 +1,7 @@
-From 10d121c71ef95e6affbe2deb9e450491047deba5 Mon Sep 17 00:00:00 2001
+From d7d394327fb5fbd041f2f96fc7c06bc89be8520b Mon Sep 17 00:00:00 2001
 From: Michael Goffioul <michael.goffioul@lincor.com>
 Date: Wed, 27 Oct 2021 07:18:45 +0200
-Subject: [PATCH 22/27] Fix mediaserver crash (FPE_INTDIV) when playing RTSP
+Subject: [PATCH 17/20] Fix mediaserver crash (FPE_INTDIV) when playing RTSP
  stream
 
 It sounds like a copy-n-paste error between 2 blocks of code: a
@@ -27,5 +27,5 @@ index 165c336e70..4eb5dc9712 100644
          mLastEarlyNotifyTimeUs = nowUs;
  
 -- 
-2.40.0
+2.48.1
 

@@ -1,7 +1,7 @@
-From 3469b428caa2ecacff6f06b614cd07c6f2fdbc41 Mon Sep 17 00:00:00 2001
+From 0f0ec6349e669611584558783a1b27a514c1721a Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Mon, 3 May 2021 06:24:52 +0430
-Subject: [PATCH 03/27] mediacodec: Use vendor_extra seccomp minijail
+Subject: [PATCH 03/20] mediacodec: Use vendor_extra seccomp minijail
 
 ---
  services/mediacodec/main_codecservice.cpp | 2 +-
@@ -21,5 +21,5 @@ index 6a82b1b6b8..62fc5b466c 100644
  int main(int argc __unused, char** argv)
  {
 -- 
-2.40.0
+2.48.1
 

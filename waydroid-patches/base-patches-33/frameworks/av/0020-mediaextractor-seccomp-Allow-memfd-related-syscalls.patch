@@ -1,7 +1,7 @@
-From 8aef4eb2a72764f94ce80bbc1a203a893e238642 Mon Sep 17 00:00:00 2001
+From 36d41d651094c056a5fa79a5c7ebe1be82e3160e Mon Sep 17 00:00:00 2001
 From: Alessandro Astone <ales.astone@gmail.com>
 Date: Sat, 19 Feb 2022 23:44:22 +0100
-Subject: [PATCH 27/27] mediaextractor: seccomp: Allow memfd related syscalls
+Subject: [PATCH 20/20] mediaextractor: seccomp: Allow memfd related syscalls
 
 Change-Id: Ia7e000e44f45698ec14270fc0d723454225ebb1d
 ---
@@ -72,5 +72,5 @@ index 51df1a238d..a133e20b2e 100644
  # for dynamically loading extractors
  getdents64: 1
 -- 
-2.40.0
+2.48.1
 

@@ -1,7 +1,7 @@
-From 8ec573d8fb546eac045a6f411ece4df257fa3d2c Mon Sep 17 00:00:00 2001
+From 7a1d8303388a29e0978a59ac73f0180dc1d1fe22 Mon Sep 17 00:00:00 2001
 From: Michael Goffioul <michael.goffioul@gmail.com>
 Date: Thu, 17 Feb 2022 11:37:19 +0100
-Subject: [PATCH 23/27] Allow mediacodec services to use mesa3d-required
+Subject: [PATCH 18/20] Allow mediacodec services to use mesa3d-required
  syscalls
 
 - kcmp
@@ -70,5 +70,5 @@ index b0ed0402bb..de23fcab21 100644
  @include /apex/com.android.media.swcodec/etc/seccomp_policy/crash_dump.x86_64.policy
  @include /apex/com.android.media.swcodec/etc/seccomp_policy/code_coverage.x86_64.policy
 -- 
-2.40.0
+2.48.1
 

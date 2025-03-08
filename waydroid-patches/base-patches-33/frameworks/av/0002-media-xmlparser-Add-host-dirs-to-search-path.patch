@@ -1,7 +1,7 @@
-From 986e54a37be81d2431aee461c38ef1a96032f9c9 Mon Sep 17 00:00:00 2001
+From fcd834e7a3acba15ad6adb28723a52f1d6e903ed Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Mon, 3 May 2021 02:50:23 +0430
-Subject: [PATCH 02/27] media: xmlparser: Add host dirs to search path
+Subject: [PATCH 02/20] media: xmlparser: Add host dirs to search path
 
 ---
  .../include/media/stagefright/xmlparser/MediaCodecsXmlParser.h  | 2 ++
@@ -21,5 +21,5 @@ index e224452fba..749b2d79d6 100644
                   "/vendor/etc",
                   "/system/etc" };
 -- 
-2.40.0
+2.48.1
 

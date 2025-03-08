@@ -1,7 +1,7 @@
 From 26a2dd9ff8f3891cd267b724fd20d30e24574e44 Mon Sep 17 00:00:00 2001
 From: Chih-Wei Huang <cwhuang@linux.org.tw>
 Date: Mon, 23 Nov 2015 00:46:22 +0800
-Subject: [PATCH 11/27] Don't use YV12 color format for video decoding
+Subject: [PATCH 11/20] Don't use YV12 color format for video decoding
 
 YV12 is not supported by Mesa yet. This has to be reverted
 when we can enable h/w decoder.

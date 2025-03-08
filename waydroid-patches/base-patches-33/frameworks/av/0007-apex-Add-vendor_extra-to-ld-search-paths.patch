@@ -1,7 +1,7 @@
-From 05281c17da29486e5edd5d33d0c5ad01aba81c1c Mon Sep 17 00:00:00 2001
+From c4544d10f316c4a9e65f4d68b6bc37e3f962a5a6 Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Sat, 22 May 2021 01:00:26 +0430
-Subject: [PATCH 07/27] apex: Add vendor_extra to ld search paths
+Subject: [PATCH 07/20] apex: Add vendor_extra to ld search paths
 
 ---
  apex/ld.config.txt | 16 ++++++++++++++++
@@ -78,5 +78,5 @@ index 713f0b7fc9..d906183871 100644
  namespace.sphal.asan.permitted.paths += /data/asan/system/${LIB}/vndk-sp${VNDK_VER}/hw
  namespace.sphal.asan.permitted.paths +=           /system/${LIB}/vndk-sp${VNDK_VER}/hw
 -- 
-2.40.0
+2.48.1
 

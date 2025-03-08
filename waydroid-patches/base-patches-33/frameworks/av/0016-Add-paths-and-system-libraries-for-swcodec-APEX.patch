@@ -1,7 +1,7 @@
-From e68acba2a5eae35eb930b6c44a79646e38481c3b Mon Sep 17 00:00:00 2001
+From 4502417e1c1342aeb4bbd3e3ec91f1d609447113 Mon Sep 17 00:00:00 2001
 From: Michael Goffioul <michael.goffioul@lincor.com>
 Date: Fri, 4 Oct 2019 20:12:57 -0400
-Subject: [PATCH 19/27] Add paths and system libraries for swcodec APEX
+Subject: [PATCH 16/20] Add paths and system libraries for swcodec APEX
 
 - libdrm.so, libhardware_legacy.so: required by drm_gralloc
 - libashmemd_client.so: suppress recurring error messages in logcat,
@@ -45,5 +45,5 @@ index d906183871..9bf0d1b752 100644
  # Add a link for libz.so which is llndk on devices where VNDK is not enforced.
  namespace.sphal.link.platform.shared_libs += libz.so
 -- 
-2.40.0
+2.48.1
 

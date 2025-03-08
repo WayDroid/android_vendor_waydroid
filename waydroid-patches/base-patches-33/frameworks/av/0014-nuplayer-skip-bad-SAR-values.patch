@@ -1,7 +1,7 @@
-From 83cbf87dad1abbb562435405e63fbf698c083623 Mon Sep 17 00:00:00 2001
+From d781116084244f75223d84a677a41103b7b4389d Mon Sep 17 00:00:00 2001
 From: Chih-Wei Huang <cwhuang@linux.org.tw>
 Date: Tue, 15 Aug 2017 12:45:48 +0800
-Subject: [PATCH 14/27] nuplayer: skip bad SAR values
+Subject: [PATCH 14/20] nuplayer: skip bad SAR values
 
 Historically there are two definitions of SAR:
 
@@ -54,5 +54,5 @@ index 9b4fc8f036..fd0aaa419c 100644
          ALOGV("display dimensions %d x %d", displayWidth, displayHeight);
      } else {
 -- 
-2.40.0
+2.48.1
 

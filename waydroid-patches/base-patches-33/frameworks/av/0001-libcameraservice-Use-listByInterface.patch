@@ -1,14 +1,14 @@
-From 33a900e73e0158e880c2011e2d267445512d0b17 Mon Sep 17 00:00:00 2001
+From 60dbda0985d9a3a77943b41e0a8562db53fbb009 Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Thu, 20 May 2021 22:35:53 +0430
-Subject: [PATCH 01/27] libcameraservice: Use listByInterface
+Subject: [PATCH 01/20] libcameraservice: Use listByInterface
 
 ---
  .../common/CameraProviderManager.cpp              | 15 ++++++++++++---
  1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/services/camera/libcameraservice/common/CameraProviderManager.cpp b/services/camera/libcameraservice/common/CameraProviderManager.cpp
-index 3132787608..dc78e1dc8c 100644
+index 43f92a9927..80d7f8ea78 100644
 --- a/services/camera/libcameraservice/common/CameraProviderManager.cpp
 +++ b/services/camera/libcameraservice/common/CameraProviderManager.cpp
 @@ -95,12 +95,21 @@ const char* FrameworkDeviceStatusToString(const CameraDeviceStatus& s) {
@@ -37,5 +37,5 @@ index 3132787608..dc78e1dc8c 100644
      return ret;
  }
 -- 
-2.40.0
+2.48.1
 

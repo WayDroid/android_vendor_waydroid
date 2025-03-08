@@ -1,7 +1,7 @@
-From ea20c6b8b27f8dfef95f1d62d2eb4b959ba2637f Mon Sep 17 00:00:00 2001
+From 66851df7dbeebe12a73f9adcdaf840759c77d2f1 Mon Sep 17 00:00:00 2001
 From: Erfan Abdi <erfangplus@gmail.com>
 Date: Thu, 20 May 2021 22:39:05 +0430
-Subject: [PATCH 05/27] drm: Fix drm on older vendors
+Subject: [PATCH 05/20] drm: Fix drm on older vendors
 
 Change-Id: I1403ebffa93d20e9d0cd19e49972f6da63e88013
 ---
@@ -47,5 +47,5 @@ index be0cd4b05d..1ee965d1d8 100644
              Hal::descriptor, [&](const hidl_vec<hidl_string>& registered) {
                  for (const auto& instance : registered) {
 -- 
-2.40.0
+2.48.1
 
