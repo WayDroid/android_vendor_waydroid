@@ -36,3 +36,18 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
 PRODUCT_PACKAGES += \
     BoringdroidSystemUIApk
 
+# Calyx MicroG
+ifeq ($(USE_CALYX_MICROG), true)
+PRODUCT_PACKAGES += \
+    GmsCore \
+    FakeStore \
+    GsfProxy \
+    DejaVuLocationService \
+    MozillaNlpBackend \
+    NominatimNlpBackend \
+    privapp-permissions-microg.xml \
+    default-permissions-microg.xml \
+    whitelist-microg.xml \
+    microg.xml
+
+endif
